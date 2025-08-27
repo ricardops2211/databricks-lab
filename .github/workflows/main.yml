@@ -1,4 +1,4 @@
-name: Databricks Login & Test
+name: Databricks Login & Test (Action Oficial)
 
 on:
   push:
@@ -25,22 +25,15 @@ jobs:
       - name: Obtener token de Databricks
         id: get-creds
         shell: powershell
-        env:
-          VAULT_ADDR: http://127.0.0.1:8200
-          VAULT_TOKEN: ${{ secrets.VAULT_TOKEN }}
         run: |
           $dbToken = vault.exe kv get -field=DATABRICKS_TOKEN secret/databricks
           echo "DATABRICKS_TOKEN=$dbToken" >> $env:GITHUB_OUTPUT
 
-      - name: Configurar Databricks CLI
-        shell: bash
-        run: |
-          mkdir -p ~/.databricks
-          cat > ~/.databricks/config <<EOF
-          [DEFAULT]
-          host = https://adb-3120226433905944.4.azuredatabricks.net
-          token = ${{ steps.get-creds.outputs.DATABRICKS_TOKEN }}
-          EOF
+      - name: Setup Databricks CLI
+        uses: databricks/setup-databricks@v2
+        with:
+          host: "https://adb-3120226433905944.4.azuredatabricks.net"
+          token: ${{ steps.get-creds.outputs.DATABRICKS_TOKEN }}
 
-      - name: Probar conexión con Databricks
+      - name: Probar conexión
         run: databricks clusters list
