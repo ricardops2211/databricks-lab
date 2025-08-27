@@ -30,10 +30,10 @@ jobs:
           echo "DATABRICKS_TOKEN=$dbToken" >> $env:GITHUB_OUTPUT
 
       - name: Setup Databricks CLI
-        uses: databricks/setup-cli@v2
+        uses: databricks/setup-cli@v0.266.0   # 🔹 o usa @main si prefieres última versión
         with:
           host: "https://adb-3120226433905944.4.azuredatabricks.net"
           token: ${{ steps.get-creds.outputs.DATABRICKS_TOKEN }}
 
-      - name: Probar conexión
+      - name: Probar conexión con Databricks
         run: databricks clusters list
