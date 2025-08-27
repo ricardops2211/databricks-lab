@@ -32,9 +32,6 @@ jobs:
           $dbToken = vault.exe kv get -field=DATABRICKS_TOKEN secret/databricks
           echo "DATABRICKS_TOKEN=$dbToken" >> $env:GITHUB_OUTPUT
 
-      - name: Instalar Databricks CLI
-        run: pip install databricks-cli
-
       - name: Configurar Databricks CLI
         shell: bash
         run: |
