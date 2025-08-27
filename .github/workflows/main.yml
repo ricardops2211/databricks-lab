@@ -1,4 +1,4 @@
-name: Databricks Login & Test
+name: Databricks Login & Tests
 
 on:
   push:
