@@ -13,16 +13,18 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
+      # 🔹 Paso 1: Login en Vault (local en el runner)
       - name: Login en Vault
         shell: powershell
         env:
           VAULT_ADDR: http://127.0.0.1:8200
           VAULT_TOKEN: ${{ secrets.VAULT_TOKEN }}
-          VAULT_SKIP_VERIFY: "true"    # 👈 fuerza a ignorar HTTPS
+          VAULT_SKIP_VERIFY: "true"
         run: |
           vault.exe login $env:VAULT_TOKEN
           vault.exe token lookup
 
+      # 🔹 Paso 2: Obtener token de Databricks desde Vault
       - name: Obtener token de Databricks
         id: get-creds
         shell: powershell
@@ -33,11 +35,10 @@ jobs:
           $dbToken = vault.exe kv get -field=DATABRICKS_TOKEN secret/azure
           echo "DATABRICKS_TOKEN=$dbToken" >> $env:GITHUB_OUTPUT
 
-      - name: Setup Databricks CLI
-        uses: databricks/setup-cli@v0.266.0
-        with:
-          host: "https://adb-3120226433905944.4.azuredatabricks.net"
-          token: ${{ steps.get-creds.outputs.DATABRICKS_TOKEN }}
-
-      - name: Probar conexión con Databricks
-        run: databricks clusters list
+      # 🔹 Paso 3: Ejecutar Databricks CLI en Docker
+      - name: Ejecutar comando Databricks CLI
+        run: |
+          docker run --rm \
+            -e DATABRICKS_HOST="https://adb-3120226433905944.4.azuredatabricks.net" \
+            -e DATABRICKS_TOKEN="${{ steps.get-creds.outputs.DATABRICKS_TOKEN }}" \
+            databrickscli:python databricks clusters list
