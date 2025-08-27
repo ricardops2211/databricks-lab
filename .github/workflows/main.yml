@@ -3,7 +3,7 @@ name: Databricks Login & Test
 on:
   push:
     branches:
-      - mainop
+      - main
 
 jobs:
   login_databricks_hvault:
