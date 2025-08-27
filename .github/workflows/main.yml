@@ -1,4 +1,4 @@
-name: Databricks Login & Test (Action Oficial)
+name: Databricks Login & Test
 
 on:
   push:
