@@ -1,0 +1,49 @@
+name: Databricks Login & Test
+
+on:
+  push:
+    branches:
+      - mainop
+
+jobs:
+  login_databricks_hvault:
+    runs-on: self-hosted
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Login en Vault
+        shell: powershell
+        env:
+          VAULT_ADDR: http://127.0.0.1:8200
+          VAULT_TOKEN: ${{ secrets.VAULT_TOKEN }}
+        run: |
+          vault.exe login $env:VAULT_TOKEN
+          vault.exe token lookup
+
+      - name: Obtener token de Databricks
+        id: get-creds
+        shell: powershell
+        env:
+          VAULT_ADDR: http://127.0.0.1:8200
+          VAULT_TOKEN: ${{ secrets.VAULT_TOKEN }}
+        run: |
+          $dbToken = vault.exe kv get -field=DATABRICKS_TOKEN secret/databricks
+          echo "DATABRICKS_TOKEN=$dbToken" >> $env:GITHUB_OUTPUT
+
+      - name: Instalar Databricks CLI
+        run: pip install databricks-cli
+
+      - name: Configurar Databricks CLI
+        shell: bash
+        run: |
+          mkdir -p ~/.databricks
+          cat > ~/.databricks/config <<EOF
+          [DEFAULT]
+          host = https://adb-3120226433905944.4.azuredatabricks.net
+          token = ${{ steps.get-creds.outputs.DATABRICKS_TOKEN }}
+          EOF
+
+      - name: Probar conexión con Databricks
+        run: databricks clusters list
