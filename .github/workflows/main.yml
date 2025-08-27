@@ -26,7 +26,7 @@ jobs:
         id: get-creds
         shell: powershell
         run: |
-          $dbToken = vault.exe kv get -field=DATABRICKS_TOKEN secret/databricks
+          $dbToken = vault.exe kv get -field=DATABRICKS_TOKEN secret/azure
           echo "DATABRICKS_TOKEN=$dbToken" >> $env:GITHUB_OUTPUT
 
       - name: Setup Databricks CLI
