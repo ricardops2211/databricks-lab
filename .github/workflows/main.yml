@@ -57,14 +57,21 @@ jobs:
           DATABRICKS_TOKEN: ${{ steps.get-creds.outputs.DATABRICKS_TOKEN }}
           PATH: /usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:~/databricks-env/bin:~/vault
         run: |
+          # Activar entorno virtual
           source ~/databricks-env/bin/activate
+          
           mkdir -p clusters_created
+          
           for cluster_file in clusters/*.json; do
             echo "Creando cluster desde $cluster_file..."
-            CLUSTER_ID=$(databricks clusters create --json "$(cat $cluster_file)" | jq -r '.cluster_id')
+            # Crear cluster y extraer cluster_id sin jq
+            CLUSTER_JSON=$(databricks clusters create --json "$(cat $cluster_file)" --output JSON)
+            CLUSTER_ID=$(echo "$CLUSTER_JSON" | grep -oP '"cluster_id": "\K[^"]+')
+            
             echo "$CLUSTER_ID" > clusters_created/$(basename $cluster_file .json).id
+            
             echo "Esperando cluster $CLUSTER_ID..."
-            until [ "$(databricks clusters get --cluster-id $CLUSTER_ID | jq -r '.state')" == "RUNNING" ]; do
+            until [ "$(databricks clusters get --cluster-id $CLUSTER_ID --output JSON | grep -oP '"state": "\K[^"]+')" == "RUNNING" ]; do
               sleep 15
             done
             echo "Cluster $CLUSTER_ID listo!"
@@ -78,6 +85,7 @@ jobs:
           PATH: /usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:~/databricks-env/bin:~/vault
         run: |
           source ~/databricks-env/bin/activate
+          
           for notebook in notebooks/*.py; do
             NOTEBOOK_NAME=$(basename $notebook)
             echo "Importando notebook $NOTEBOOK_NAME..."
@@ -93,6 +101,7 @@ jobs:
               }"
             done
           done
+
 
 
 
