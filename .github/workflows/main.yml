@@ -14,7 +14,7 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      # 🔹 Paso 1: Login en Vault (local en el runner)
+      # 🔹 Paso 1: Login en Vault
       - name: Login en Vault
         shell: bash
         env:
@@ -48,8 +48,10 @@ jobs:
           PATH: ${{ env.PATH }}:~/databricks-env/bin
         run: |
           source ~/databricks-env/bin/activate
-          databricks clusters list --output TABLE
+          echo "Lista de clusters:"
+          databricks clusters list
 
+      # 🔹 Paso 4: Crear clusters desde JSON (CLI antigua)
       - name: Crear clusters Databricks desde JSON
         shell: bash
         env:
@@ -57,26 +59,25 @@ jobs:
           DATABRICKS_TOKEN: ${{ steps.get-creds.outputs.DATABRICKS_TOKEN }}
           PATH: /usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:~/databricks-env/bin:~/vault
         run: |
-          # Activar entorno virtual
           source ~/databricks-env/bin/activate
-          
           mkdir -p clusters_created
           
           for cluster_file in clusters/*.json; do
             echo "Creando cluster desde $cluster_file..."
-            # Crear cluster y extraer cluster_id sin jq
-            CLUSTER_JSON=$(databricks clusters create --json "$(cat $cluster_file)" --output JSON)
+            # Crear cluster y extraer cluster_id usando grep
+            CLUSTER_JSON=$(databricks clusters create --json "$(cat $cluster_file)")
             CLUSTER_ID=$(echo "$CLUSTER_JSON" | grep -oP '"cluster_id": "\K[^"]+')
             
             echo "$CLUSTER_ID" > clusters_created/$(basename $cluster_file .json).id
             
             echo "Esperando cluster $CLUSTER_ID..."
-            until [ "$(databricks clusters get --cluster-id $CLUSTER_ID --output JSON | grep -oP '"state": "\K[^"]+')" == "RUNNING" ]; do
+            until [ "$(databricks clusters get --cluster-id $CLUSTER_ID | grep -oP '"state": "\K[^"]+')" == "RUNNING" ]; do
               sleep 15
             done
             echo "Cluster $CLUSTER_ID listo!"
           done
 
+      # 🔹 Paso 5: Importar y ejecutar notebooks
       - name: Importar y ejecutar notebooks
         shell: bash
         env:
@@ -101,9 +102,3 @@ jobs:
               }"
             done
           done
-
-
-
-
-
-
