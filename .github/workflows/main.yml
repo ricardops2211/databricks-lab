@@ -49,4 +49,5 @@ jobs:
           echo "Lista de clusters en Databricks:"
           curl -s -H "Authorization: Bearer $DATABRICKS_TOKEN" \
                -H "Content-Type: application/json" \
-               "$DATABRICKS_HOST/api/2.0/clusters/list" | jq
+               "$DATABRICKS_HOST/api/2.0/clusters/list"
+
