@@ -1,0 +1,10 @@
+{
+  "cluster_name": "gha-auto-cluster",
+  "spark_version": "13.1.x-scala2.12",
+  "node_type_id": "Standard_DS3_v2",
+  "num_workers": 1,
+  "autotermination_minutes": 20,
+  "spark_conf": {
+    "spark.databricks.cluster.profile": "singleNode"
+  }
+}

@@ -50,6 +50,55 @@ jobs:
           source ~/databricks-env/bin/activate
           databricks clusters list --output TABLE
 
+      # 🔹 Paso 4: Crear clusters desde la carpeta clusters/
+      - name: Crear clusters Databricks desde JSON
+        shell: bash
+        env:
+          DATABRICKS_HOST: "https://adb-3120226433905944.4.azuredatabricks.net"
+          DATABRICKS_TOKEN: ${{ steps.get-creds.outputs.DATABRICKS_TOKEN }}
+          PATH: ${{ env.PATH }}:~/databricks-env/bin
+        run: |
+          source ~/databricks-env/bin/activate
+          mkdir -p clusters_created
+          for cluster_file in clusters/*.json; do
+            echo "Creando cluster desde $cluster_file..."
+            CLUSTER_ID=$(databricks clusters create --json "$(cat $cluster_file)" | jq -r '.cluster_id')
+            echo "$CLUSTER_ID" > clusters_created/$(basename $cluster_file .json).id
+            # Esperar a que el cluster esté RUNNING
+            echo "Esperando cluster $CLUSTER_ID..."
+            until [ "$(databricks clusters get --cluster-id $CLUSTER_ID | jq -r '.state')" == "RUNNING" ]; do
+              sleep 15
+            done
+            echo "Cluster $CLUSTER_ID listo!"
+          done
+
+      # 🔹 Paso 5: Importar y ejecutar todos los notebooks
+      - name: Importar y ejecutar notebooks
+        shell: bash
+        env:
+          DATABRICKS_HOST: "https://adb-3120226433905944.4.azuredatabricks.net"
+          DATABRICKS_TOKEN: ${{ steps.get-creds.outputs.DATABRICKS_TOKEN }}
+          PATH: ${{ env.PATH }}:~/databricks-env/bin
+        run: |
+          source ~/databricks-env/bin/activate
+          for notebook in notebooks/*.py; do
+            NOTEBOOK_NAME=$(basename $notebook)
+            echo "Importando notebook $NOTEBOOK_NAME..."
+            databricks workspace import "$notebook" "/Users/gha-runner/$NOTEBOOK_NAME" --language PYTHON --overwrite
+
+            # Ejecutar en todos los clusters creados
+            for cluster_id_file in clusters_created/*.id; do
+              CLUSTER_ID=$(cat $cluster_id_file)
+              echo "Ejecutando $NOTEBOOK_NAME en cluster $CLUSTER_ID..."
+              databricks runs submit --json "{
+                \"run_name\": \"Run $NOTEBOOK_NAME desde GHA\",
+                \"existing_cluster_id\": \"$CLUSTER_ID\",
+                \"notebook_task\": {\"notebook_path\": \"/Users/gha-runner/$NOTEBOOK_NAME\"}
+              }"
+            done
+          done
+
+
 
 
 
