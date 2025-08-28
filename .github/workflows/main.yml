@@ -47,10 +47,7 @@ jobs:
           DATABRICKS_TOKEN: ${{ steps.get-creds.outputs.DATABRICKS_TOKEN }}
           PATH: ${{ env.PATH }}:~/databricks-env/bin
         run: |
-          # Activar entorno virtual dentro del mismo step
           source ~/databricks-env/bin/activate
-          
-          echo "Lista de clusters en Databricks:"
           databricks clusters list --output TABLE
 
 
