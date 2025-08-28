@@ -21,9 +21,11 @@ jobs:
           VAULT_ADDR: http://127.0.0.1:8200
           VAULT_TOKEN: ${{ secrets.VAULT_TOKEN }}
           VAULT_SKIP_VERIFY: "true"
+          PATH: ${{ env.PATH }}:/home/gha-runner/vault
         run: |
           vault login $VAULT_TOKEN
           vault token lookup
+
 
       # 🔹 Paso 2: Obtener token de Databricks desde Vault
       - name: Obtener token de Databricks
