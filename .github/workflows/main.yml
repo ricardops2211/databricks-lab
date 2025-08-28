@@ -1,4 +1,4 @@
-name: Databricks Login & Test
+name: Databricks Login & Test (Linux Self-Hosted)
 
 on:
   push:
@@ -10,7 +10,7 @@ jobs:
     runs-on: self-hosted
 
     steps:
-      # 🔹 Paso 0: Hacer checkout del repo
+      # 🔹 Paso 0: Checkout del repo
       - name: Checkout
         uses: actions/checkout@v4
 
@@ -23,9 +23,9 @@ jobs:
           VAULT_SKIP_VERIFY: "true"
           PATH: ${{ env.PATH }}:/home/gha-runner/vault
         run: |
+          vault --version
           vault login $VAULT_TOKEN
           vault token lookup
-
 
       # 🔹 Paso 2: Obtener token de Databricks desde Vault
       - name: Obtener token de Databricks
@@ -34,11 +34,12 @@ jobs:
         env:
           VAULT_ADDR: http://127.0.0.1:8200
           VAULT_SKIP_VERIFY: "true"
+          PATH: ${{ env.PATH }}:/home/gha-runner/vault
         run: |
           dbToken=$(vault kv get -field=DATABRICKS_TOKEN secret/azure)
           echo "DATABRICKS_TOKEN=$dbToken" >> $GITHUB_OUTPUT
 
-      # 🔹 Paso 3: Ejecutar Databricks CLI en Docker
+      # 🔹 Paso 3: Ejecutar comando Databricks CLI dentro de Docker
       - name: Ejecutar comando Databricks CLI
         shell: bash
         run: |
@@ -46,4 +47,3 @@ jobs:
             -e DATABRICKS_HOST="https://adb-3120226433905944.4.azuredatabricks.net" \
             -e DATABRICKS_TOKEN="${{ steps.get-creds.outputs.DATABRICKS_TOKEN }}" \
             databrickscli:python databricks clusters list
-
