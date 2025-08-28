@@ -45,8 +45,10 @@ jobs:
         env:
           DATABRICKS_HOST: "https://adb-3120226433905944.4.azuredatabricks.net"
           DATABRICKS_TOKEN: ${{ steps.get-creds.outputs.DATABRICKS_TOKEN }}
-          PATH: ${{ env.PATH }}:/home/gha-runner/.local/bin   # ruta donde esté databricks CLI
         run: |
+          # Activar entorno virtual
+          source /root/databricks-env/bin/activate
+          
           echo "Lista de clusters en Databricks:"
           databricks clusters list --output TABLE
 
