@@ -48,15 +48,16 @@ jobs:
           PATH: ${{ env.PATH }}:~/databricks-env/bin
         run: |
           source ~/databricks-env/bin/activate
-          
+
           # Crear carpeta si no existe
           databricks workspace mkdirs /Shared/notebook/py
-          
+
           for notebook in notebooks/*.py; do
-            NOTEBOOK_NAME="${notebook##*/}"   # reemplazo de basename
+            NOTEBOOK_NAME="${notebook##*/}"   # extrae solo el nombre del archivo
             echo "Importando $NOTEBOOK_NAME en /Shared/notebook/py..."
             databricks workspace import "$notebook" "/Shared/notebook/py/$NOTEBOOK_NAME" \
               --language PYTHON --overwrite
+          done
 
       # 🔹 Paso 4: Crear Job Workflow desde JSON
       - name: Crear Job Workflow en Databricks
@@ -67,10 +68,11 @@ jobs:
           PATH: ${{ env.PATH }}:~/databricks-env/bin
         run: |
           source ~/databricks-env/bin/activate
-          
+
           for job_file in jobs/*.json; do
             echo "Creando job workflow desde $job_file..."
             databricks jobs create --json "$( < "$job_file" )"
+          done
 
       # 🔹 Paso 5: Ejecutar Job Workflow y validar resultado
       - name: Ejecutar Job Workflow y verificar
@@ -81,24 +83,25 @@ jobs:
           PATH: ${{ env.PATH }}:~/databricks-env/bin
         run: |
           source ~/databricks-env/bin/activate
-          
+
           for job_file in jobs/*.json; do
-            JOB_NAME=$(grep -oP '"name":\s*"\K[^"]+' "$job_file")
+            # Extraer nombre del job directamente en Bash
+            JOB_NAME=$(grep '"name":' "$job_file" | head -1 | cut -d'"' -f4)
             echo "Ejecutando job workflow $JOB_NAME..."
 
-            # Crear el job (o actualizar si ya existe) y obtener job_id
-            JOB_ID=$(databricks jobs create --json "$( < "$job_file" )" | grep -oP '"job_id": \K[0-9]+')
-            
+            # Crear el job y obtener job_id
+            JOB_ID=$(databricks jobs create --json "$( < "$job_file" )" | cut -d':' -f2 | tr -d ' ,}')
+
             # Ejecutar el job
-            RUN_ID=$(databricks jobs run-now --job-id "$JOB_ID" | grep -oP '"run_id": \K[0-9]+')
-            
+            RUN_ID=$(databricks jobs run-now --job-id "$JOB_ID" | cut -d':' -f2 | tr -d ' ,}')
+
             echo "Esperando a que termine el job..."
             while true; do
-              STATE=$(databricks runs get --run-id "$RUN_ID" | grep -oP '"life_cycle_state": "\K[^"]+')
-              RESULT=$(databricks runs get --run-id "$RUN_ID" | grep -oP '"result_state": "\K[^"]+')
-              
+              STATE=$(databricks runs get --run-id "$RUN_ID" | grep '"life_cycle_state":' | cut -d'"' -f4)
+              RESULT=$(databricks runs get --run-id "$RUN_ID" | grep '"result_state":' | cut -d'"' -f4)
+
               echo "Estado: $STATE, Resultado: $RESULT"
-              
+
               if [[ "$STATE" == "TERMINATED" ]]; then
                 if [[ "$RESULT" == "SUCCESS" ]]; then
                   echo "✅ Job $JOB_NAME terminado correctamente"
