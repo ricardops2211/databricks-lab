@@ -1,5 +1,5 @@
 {
-  "name": "TENNIS US OPEN",
+  "name": "TENNIS US OPEN-1",
   "tasks": [
     {
       "task_key": "etl_task",
@@ -9,7 +9,7 @@
       "new_cluster": {
         "spark_version": "13.3.x-scala2.12",
         "node_type_id": "Standard_DS3_v2",
-        "num_workers": 2              
+        "num_workers": 1           
       },
       "timeout_seconds": 3600
     }
