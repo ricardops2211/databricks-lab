@@ -7,19 +7,17 @@
         "notebook_path": "/Shared/notebook/py/uno.py"
       },
       "new_cluster": {
-        "cluster_name": "Quick_Cluster_Stable",
+        "cluster_name": "Quick_Cluster_Stable_WestUS",
         "spark_version": "15.3.x-scala2.12",
         "node_type_id": "Standard_DS3_v2",
-        "autoscale": {
-          "min_workers": 1,
-          "max_workers": 1
-        },
+        "num_workers": 0,
         "autotermination_minutes": 30,
         "azure_attributes": {
-          "availability": "ON_DEMAND_AZURE"
+          "availability": "ON_DEMAND_AZURE",
+          "zone_id": "1" 
         },
         "runtime_engine": "PHOTON",
-        "is_single_node": false,
+        "is_single_node": true,
         "data_security_mode": "DATA_SECURITY_MODE_AUTO"
       },
       "timeout_seconds": 3600
