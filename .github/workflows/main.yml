@@ -14,14 +14,6 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      # 🔹 Paso 0.5: Instalar herramientas básicas
-      - name: Instalar herramientas básicas
-        shell: bash
-        run: |
-          # Para Debian/Ubuntu
-          apt-get update -y
-          apt-get install -y bash coreutils grep sed awk jq
-
       # 🔹 Paso 1: Login en Vault
       - name: Login en Vault
         shell: bash
