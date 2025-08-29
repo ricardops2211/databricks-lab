@@ -53,7 +53,7 @@ jobs:
           databricks workspace mkdirs /Shared/notebook/py
           
           for notebook in notebooks/*.py; do
-            NOTEBOOK_NAME=$(basename $notebook)
+            NOTEBOOK_NAME="${notebook##*/}"
             echo "Importando $NOTEBOOK_NAME en /Shared/notebook/py..."
             databricks workspace import "$notebook" "/Shared/notebook/py/$NOTEBOOK_NAME" \
               --language PYTHON --overwrite
