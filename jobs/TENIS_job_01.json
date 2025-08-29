@@ -1,5 +1,5 @@
 {
-  "name": "TENIS Job 04",
+  "name": "TENNIS ROLAND GARROS",
   "tasks": [
     {
       "task_key": "etl_task",
@@ -8,12 +8,8 @@
       },
       "new_cluster": {
         "spark_version": "13.3.x-scala2.12",
-        "node_type_id": "Standard_DS3_v2",
-        "num_workers": 2,
-        "autoscale": {
-          "min_workers": 2,
-          "max_workers": 4
-        }
+        "node_type_id": "Standard_DS2_v2",   
+        "num_workers": 4                     
       },
       "timeout_seconds": 3600
     }
