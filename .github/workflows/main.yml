@@ -53,7 +53,7 @@ jobs:
           databricks workspace mkdirs /Shared/notebook/py
           
           for notebook in notebooks/*.py; do
-            NOTEBOOK_NAME="${notebook##*/}"
+            NOTEBOOK_NAME="${notebook##*/}"   # reemplazo de basename
             echo "Importando $NOTEBOOK_NAME en /Shared/notebook/py..."
             databricks workspace import "$notebook" "/Shared/notebook/py/$NOTEBOOK_NAME" \
               --language PYTHON --overwrite
@@ -71,5 +71,5 @@ jobs:
           
           for job_file in jobs/*.json; do
             echo "Creando job workflow desde $job_file..."
-            databricks jobs create --json "$(cat $job_file)"
+            databricks jobs create --json "$( < "$job_file" )"   # reemplazo de cat
           done
