@@ -73,3 +73,43 @@ jobs:
             echo "Creando job workflow desde $job_file..."
             databricks jobs create --json "$( < "$job_file" )"   # reemplazo de cat
           done
+
+      # 🔹 Paso 5: Ejecutar Job Workflow y validar resultado
+      - name: Ejecutar Job Workflow y verificar
+        shell: bash
+        env:
+          DATABRICKS_HOST: "https://adb-3120226433905944.4.azuredatabricks.net"
+          DATABRICKS_TOKEN: ${{ steps.get-creds.outputs.DATABRICKS_TOKEN }}
+          PATH: ${{ env.PATH }}:~/databricks-env/bin
+        run: |
+          source ~/databricks-env/bin/activate
+          
+          for job_file in jobs/*.json; do
+            JOB_NAME=$(jq -r '.name' "$job_file")  # Requiere jq para leer nombre del job
+            echo "Ejecutando job workflow $JOB_NAME..."
+
+            # Crear el job (o actualizar si ya existe) y obtener job_id
+            JOB_ID=$(databricks jobs create --json "$( < "$job_file" )" | grep -oP '"job_id": \K[0-9]+')
+            
+            # Ejecutar el job
+            RUN_ID=$(databricks jobs run-now --job-id "$JOB_ID" | grep -oP '"run_id": \K[0-9]+')
+            
+            echo "Esperando a que termine el job..."
+            while true; do
+              STATE=$(databricks runs get --run-id "$RUN_ID" | grep -oP '"life_cycle_state": "\K[^"]+')
+              RESULT=$(databricks runs get --run-id "$RUN_ID" | grep -oP '"result_state": "\K[^"]+')
+              
+              echo "Estado: $STATE, Resultado: $RESULT"
+              
+              if [[ "$STATE" == "TERMINATED" ]]; then
+                if [[ "$RESULT" == "SUCCESS" ]]; then
+                  echo "✅ Job $JOB_NAME terminado correctamente"
+                  break
+                else
+                  echo "❌ Job $JOB_NAME falló con resultado: $RESULT"
+                  exit 1
+                fi
+              fi
+              sleep 15
+            done
+          done
