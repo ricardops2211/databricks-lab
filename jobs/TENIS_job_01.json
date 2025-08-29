@@ -1,14 +1,10 @@
 {
-  "name": "ETL Job Workflow",
+  "name": "TENIS Job 01",
   "tasks": [
     {
       "task_key": "etl_task",
       "notebook_task": {
-        "notebook_path": "/Shared/notebook/py/uno",
-        "base_parameters": {
-          "input_path": "dbfs:/mnt/input/data.csv",
-          "output_path": "dbfs:/mnt/output/results/"
-        }
+        "notebook_path": "/Shared/notebook/py/TENIS_notebook"
       },
       "new_cluster": {
         "spark_version": "13.3.x-scala2.12",
@@ -17,8 +13,7 @@
         "autoscale": {
           "min_workers": 2,
           "max_workers": 4
-        },
-        "autotermination_minutes": 20
+        }
       },
       "timeout_seconds": 3600
     }
