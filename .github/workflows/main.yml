@@ -39,8 +39,8 @@ jobs:
           dbToken=$(vault kv get -field=DATABRICKS_TOKEN secret/azure)
           echo "DATABRICKS_TOKEN=$dbToken" >> $GITHUB_OUTPUT
 
-      # 🔹 Paso 3: Listar clusters con Databricks CLI
-      - name: Listar clusters de Databricks con CLI
+      # 🔹 Paso 3: Importar notebooks en /Shared/notebook/py
+      - name: Importar notebooks en Databricks
         shell: bash
         env:
           DATABRICKS_HOST: "https://adb-3120226433905944.4.azuredatabricks.net"
@@ -48,57 +48,28 @@ jobs:
           PATH: ${{ env.PATH }}:~/databricks-env/bin
         run: |
           source ~/databricks-env/bin/activate
-          echo "Lista de clusters:"
-          databricks clusters list
-
-      # 🔹 Paso 4: Crear clusters desde JSON (CLI antigua)
-      - name: Crear clusters Databricks desde JSON
-        shell: bash
-        env:
-          DATABRICKS_HOST: "https://adb-3120226433905944.4.azuredatabricks.net"
-          DATABRICKS_TOKEN: ${{ steps.get-creds.outputs.DATABRICKS_TOKEN }}
-          PATH: /usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:~/databricks-env/bin:~/vault
-        run: |
-          source ~/databricks-env/bin/activate
-          mkdir -p clusters_created
           
-          for cluster_file in clusters/*.json; do
-            echo "Creando cluster desde $cluster_file..."
-            # Crear cluster y extraer cluster_id usando grep
-            CLUSTER_JSON=$(databricks clusters create --json "$(cat $cluster_file)")
-            CLUSTER_ID=$(echo "$CLUSTER_JSON" | grep -oP '"cluster_id": "\K[^"]+')
-            
-            echo "$CLUSTER_ID" > clusters_created/$(basename $cluster_file .json).id
-            
-            echo "Esperando cluster $CLUSTER_ID..."
-            until [ "$(databricks clusters get --cluster-id $CLUSTER_ID | grep -oP '"state": "\K[^"]+')" == "RUNNING" ]; do
-              sleep 15
-            done
-            echo "Cluster $CLUSTER_ID listo!"
-          done
-
-      # 🔹 Paso 5: Importar y ejecutar notebooks
-      - name: Importar y ejecutar notebooks
-        shell: bash
-        env:
-          DATABRICKS_HOST: "https://adb-3120226433905944.4.azuredatabricks.net"
-          DATABRICKS_TOKEN: ${{ steps.get-creds.outputs.DATABRICKS_TOKEN }}
-          PATH: /usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:~/databricks-env/bin:~/vault
-        run: |
-          source ~/databricks-env/bin/activate
+          # Crear carpeta si no existe
+          databricks workspace mkdirs /Shared/notebook/py
           
           for notebook in notebooks/*.py; do
             NOTEBOOK_NAME=$(basename $notebook)
-            echo "Importando notebook $NOTEBOOK_NAME..."
-            databricks workspace import "$notebook" "/Users/gha-runner/$NOTEBOOK_NAME" --language PYTHON --overwrite
+            echo "Importando $NOTEBOOK_NAME en /Shared/notebook/py..."
+            databricks workspace import "$notebook" "/Shared/notebook/py/$NOTEBOOK_NAME" \
+              --language PYTHON --overwrite
+          done
 
-            for cluster_id_file in clusters_created/*.id; do
-              CLUSTER_ID=$(cat $cluster_id_file)
-              echo "Ejecutando $NOTEBOOK_NAME en cluster $CLUSTER_ID..."
-              databricks runs submit --json "{
-                \"run_name\": \"Run $NOTEBOOK_NAME desde GHA\",
-                \"existing_cluster_id\": \"$CLUSTER_ID\",
-                \"notebook_task\": {\"notebook_path\": \"/Users/gha-runner/$NOTEBOOK_NAME\"}
-              }"
-            done
+      # 🔹 Paso 4: Crear Job Workflow desde JSON
+      - name: Crear Job Workflow en Databricks
+        shell: bash
+        env:
+          DATABRICKS_HOST: "https://adb-3120226433905944.4.azuredatabricks.net"
+          DATABRICKS_TOKEN: ${{ steps.get-creds.outputs.DATABRICKS_TOKEN }}
+          PATH: ${{ env.PATH }}:~/databricks-env/bin
+        run: |
+          source ~/databricks-env/bin/activate
+          
+          for job_file in jobs/*.json; do
+            echo "Creando job workflow desde $job_file..."
+            databricks jobs create --json "$(cat $job_file)"
           done

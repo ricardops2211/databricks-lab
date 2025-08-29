@@ -1,17 +1,28 @@
 {
-  "cluster_name": "mi-cluster-eastus",
-  "spark_version": "13.3.x-scala2.12", 
-  "node_type_id": "Standard_DS3_v2",
-  "driver_node_type_id": "Standard_DS3_v2",
-  "autoscale": {
-    "min_workers": 1,
-    "max_workers": 2
-  },
-  "autotermination_minutes": 30,
-  "spark_conf": {},
-  "azure_attributes": {
-    "availability": "ON_DEMAND_AZURE",
-    "first_on_demand": 1,
-    "spot_bid_max_price": -1
-  }
+  "name": "ETL Job Workflow",
+  "tasks": [
+    {
+      "task_key": "etl_task",
+      "notebook_task": {
+        "notebook_path": "/Shared/notebook/py/uno",
+        "base_parameters": {
+          "input_path": "dbfs:/mnt/input/data.csv",
+          "output_path": "dbfs:/mnt/output/results/"
+        }
+      },
+      "new_cluster": {
+        "spark_version": "13.3.x-scala2.12",
+        "node_type_id": "Standard_DS3_v2",
+        "num_workers": 2,
+        "autoscale": {
+          "min_workers": 2,
+          "max_workers": 4
+        },
+        "autotermination_minutes": 20
+      },
+      "timeout_seconds": 3600
+    }
+  ],
+  "max_concurrent_runs": 1,
+  "format": "MULTI_TASK"
 }
