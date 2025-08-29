@@ -8,8 +8,8 @@
       },
       "new_cluster": {
         "cluster_name": "Quick_Cluster_Stable",
-        "spark_version": "15.3.x-scala2.12", 
-        "node_type_id": "Standard_DS3_v2", 
+        "spark_version": "15.3.x-scala2.12",
+        "node_type_id": "Standard_DS3_v2",
         "autoscale": {
           "min_workers": 1,
           "max_workers": 2
