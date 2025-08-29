@@ -1,10 +1,10 @@
 {
-  "name": "TENIS Job 02",
+  "name": "TENIS Job 03",
   "tasks": [
     {
       "task_key": "etl_task",
       "notebook_task": {
-        "notebook_path": "/Shared/notebook/py/uno"
+        "notebook_path": "/Shared/notebook/py/uno.py"
       },
       "new_cluster": {
         "spark_version": "13.3.x-scala2.12",
