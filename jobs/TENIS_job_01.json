@@ -7,22 +7,22 @@
         "notebook_path": "/Shared/notebook/py/uno.py"
       },
       "new_cluster": {
-          "data_security_mode": "DATA_SECURITY_MODE_AUTO",
-          "cluster_name": "Cluster ETC",
-          "kind": "CLASSIC_PREVIEW",
-          "azure_attributes": {
-            "availability": "ON_DEMAND_AZURE"          
-          },
-          "runtime_engine": "PHOTON",
-          "spark_version": "16.4.x-scala2.12",
-          "node_type_id": "Standard_D4s_v3",           
-          "autotermination_minutes": 60,          
-          "is_single_node": false,
-          "autoscale": {
-            "min_workers": 1,                           
-            "max_workers": 3                      
-  }
-}
+        "cluster_name": "Quick_Cluster_2025-08-29",
+        "spark_version": "16.4.x-scala2.12",
+        "node_type_id": "Standard_DS3_v2",
+        "autoscale": {
+          "min_workers": 1,
+          "max_workers": 2
+        },
+        "autotermination_minutes": 30,
+        "azure_attributes": {
+          "availability": "ON_DEMAND_AZURE"
+        },
+        "runtime_engine": "PHOTON",
+        "is_single_node": false,
+        "data_security_mode": "DATA_SECURITY_MODE_AUTO"
+      }
+
 ,
       "timeout_seconds": 3600
     }
