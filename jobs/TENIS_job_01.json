@@ -7,14 +7,23 @@
         "notebook_path": "/Shared/notebook/py/uno.py"
       },
       "new_cluster": {
-        "spark_version": "13.3.x-scala2.12",
-        "node_type_id": "Standard_DS3_v2",
-        "num_workers": 1,
-        "autoscale": {
-          "min_workers": 1,
-          "max_workers": 2
-        }        
-      },
+          "data_security_mode": "DATA_SECURITY_MODE_AUTO",
+          "cluster_name": "Cluster ETC",
+          "kind": "CLASSIC_PREVIEW",
+          "azure_attributes": {
+            "availability": "ON_DEMAND_AZURE"          
+          },
+          "runtime_engine": "PHOTON",
+          "spark_version": "16.4.x-scala2.12",
+          "node_type_id": "Standard_D4s_v3",           
+          "autotermination_minutes": 60,          
+          "is_single_node": false,
+          "autoscale": {
+            "min_workers": 1,                           
+            "max_workers": 3                      
+  }
+}
+,
       "timeout_seconds": 3600
     }
   ],
