@@ -78,7 +78,7 @@ jobs:
 
 
 
-      # 🔹 Paso 5: Ejecutar Job Workflow y validar resultado
+      # 🔹 Paso 5: Ejecutar Job Workflow y validar resultado (sin grep/jq/awk)
       - name: Ejecutar Job Workflow y verificar
         shell: bash
         env:
@@ -89,20 +89,22 @@ jobs:
           source ~/databricks-env/bin/activate
 
           for job_file in jobs/*.json; do
-            # Extraer nombre del job directamente en Bash
-            JOB_NAME=$(grep '"name":' "$job_file" | head -1 | cut -d'"' -f4)
+            JOB_NAME=$(python3 -c "import json;print(json.load(open('$job_file'))['name'])")
             echo "Ejecutando job workflow $JOB_NAME..."
 
             # Crear el job y obtener job_id
-            JOB_ID=$(databricks jobs create --json "$( < "$job_file" )" | cut -d':' -f2 | tr -d ' ,}')
+            JOB_JSON=$(databricks jobs create --json "$( < "$job_file" )")
+            JOB_ID=$(python3 -c "import sys,json;print(json.load(sys.stdin)['job_id'])" <<< "$JOB_JSON")
 
             # Ejecutar el job
-            RUN_ID=$(databricks jobs run-now --job-id "$JOB_ID" | cut -d':' -f2 | tr -d ' ,}')
+            RUN_JSON=$(databricks jobs run-now --job-id "$JOB_ID")
+            RUN_ID=$(python3 -c "import sys,json;print(json.load(sys.stdin)['run_id'])" <<< "$RUN_JSON")
 
             echo "Esperando a que termine el job..."
             while true; do
-              STATE=$(databricks runs get --run-id "$RUN_ID" | grep '"life_cycle_state":' | cut -d'"' -f4)
-              RESULT=$(databricks runs get --run-id "$RUN_ID" | grep '"result_state":' | cut -d'"' -f4)
+              RUN_INFO=$(databricks runs get --run-id "$RUN_ID")
+              STATE=$(python3 -c "import sys,json;print(json.load(sys.stdin)['state']['life_cycle_state'])" <<< "$RUN_INFO")
+              RESULT=$(python3 -c "import sys,json;print(json.load(sys.stdin)['state'].get('result_state'))" <<< "$RUN_INFO")
 
               echo "Estado: $STATE, Resultado: $RESULT"
 

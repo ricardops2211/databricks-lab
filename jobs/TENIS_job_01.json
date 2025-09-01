@@ -1,5 +1,5 @@
 {
-  "name": "JOB-WORKFLOW-SINGLE-NODE",
+  "name": "JOB-WORKFLOW-SINGLE-NODE-PYTHON",
   "tasks": [
     {
       "task_key": "etl_task",
