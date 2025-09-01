@@ -120,11 +120,12 @@ jobs:
 
             # Mostrar las primeras 20 líneas de parametros.yaml
             echo "📄 Contenido de parametros.yaml (primeras líneas):"
-            databricks fs head -n 20 "$PARAM_FILE"
+            databricks fs cat "$PARAM_FILE" | head -n 20
           else
             echo "❌ parametros.yaml NO existe en DBFS"
             exit 1
           fi
+
 
 
       # 🔹 Paso 5: Crear Job Workflow en Databricks
