@@ -1,22 +1,33 @@
 {
-  "name": "JOB-ELIAS-TENIS-01",
+  "name": "JOB-MACBOOKS01",
   "tasks": [
     {
       "task_key": "etl_task",
       "notebook_task": {
-        "notebook_path": "/Shared/notebook/py/archivopython.py"
+        "notebook_path": "/Shared/notebook/py/archivopython.py",
+        "base_parameters": {
+          "input_path": "dbfs:/FileStore/data/",
+          "output_path": "dbfs:/FileStore/jobs_output/"
+        }
       },
-"new_cluster": {
-  "spark_version": "15.3.x-scala2.12",
-  "node_type_id": "Standard_D3_v2",
-  "driver_node_type_id": "Standard_D3_v2",
-  "num_workers": 0,
-  "runtime_engine": "PHOTON",
-  "azure_attributes": {
-    "availability": "ON_DEMAND_AZURE"
-  }
-},
-      "timeout_seconds": 1800
+      "new_cluster": {
+        "spark_version": "15.3.x-scala2.12",
+        "node_type_id": "Standard_D3_v2",
+        "driver_node_type_id": "Standard_D3_v2",
+        "num_workers": 0,
+        "runtime_engine": "PHOTON",
+        "azure_attributes": {
+          "availability": "ON_DEMAND_AZURE"
+        },
+        "spark_conf": {
+          "spark.databricks.pyspark.enableProcessIsolation": "true"
+        },
+        "libraries": [
+          { "pypi": { "package": "pandas" } },
+          { "pypi": { "package": "numpy" } }
+        ]
+      },
+      "timeout_seconds": 3600
     }
   ],
   "max_concurrent_runs": 1

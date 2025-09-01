@@ -1,20 +1,45 @@
 # Databricks notebook source
-# COMMAND ----------
-dbutils.widgets.text("input_path", "dbfs:/mnt/input/data.csv", "Input Path")
-dbutils.widgets.text("output_path", "dbfs:/mnt/output/results/", "Output Path")
+import pandas as pd
+import json
+import yaml
+import os
 
-input_path = dbutils.widgets.get("input_path")
-output_path = dbutils.widgets.get("output_path")
+# 📂 Paths en DBFS
+clientes_path = "/dbfs/FileStore/jobs_data/raw/clientes.csv"
+ventas_path = "/dbfs/FileStore/jobs_data/raw/ventas.json"
+parametros_path = "/dbfs/FileStore/jobs_data/config/parametros.yaml"
 
-print(f"📥 Leyendo datos desde: {input_path}")
-print(f"💾 Guardando resultados en: {output_path}")
+output_dir = "/dbfs/FileStore/jobs_output/reports/"
+log_dir = "/dbfs/FileStore/jobs_output/logs/"
+os.makedirs(output_dir, exist_ok=True)
+os.makedirs(log_dir, exist_ok=True)
 
-# Ejemplo: leer CSV, hacer transformación y guardar
-df = spark.read.option("header", "true").csv(input_path)
+# 🧾 Leer parámetros
+with open(parametros_path, "r") as f:
+    params = yaml.safe_load(f)
 
-# Pequeña transformación: contar registros por columna "category"
-result = df.groupBy("category").count()
+umbral = params.get("umbral_monto", 50)
+reporte_nombre = params.get("reporte_nombre", "reporte.csv")
 
-result.write.mode("overwrite").parquet(output_path)
+# 📥 Leer datasets
+clientes = pd.read_csv(clientes_path)
+with open(ventas_path, "r") as f:
+    ventas = pd.DataFrame(json.load(f))
 
-print("✅ Proceso ETL finalizado correctamente")
+# 🔗 Unir data
+df = ventas.merge(clientes, left_on="cliente_id", right_on="id")
+
+# 💡 Filtrar según umbral
+df_filtrado = df[df["monto"] >= umbral]
+
+# 📤 Guardar reporte
+output_file = os.path.join(output_dir, reporte_nombre)
+df_filtrado.to_csv(output_file, index=False)
+
+# 📝 Guardar log
+with open(os.path.join(log_dir, "run.log"), "w") as f:
+    f.write(f"Job ejecutado correctamente.\n")
+    f.write(f"Filas procesadas: {len(df)}\n")
+    f.write(f"Filas filtradas: {len(df_filtrado)}\n")
+
+print(f"✅ Reporte generado en {output_file}")

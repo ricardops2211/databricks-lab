@@ -49,16 +49,33 @@ jobs:
         run: |
           source ~/databricks-env/bin/activate
 
-          # Crear carpeta si no existe
           databricks workspace mkdirs /Shared/notebook/py
 
           for notebook in notebooks/*.py; do
-            NOTEBOOK_NAME="${notebook##*/}"   # extrae solo el nombre del archivo
+            NOTEBOOK_NAME="${notebook##*/}"
             echo "Importando $NOTEBOOK_NAME en /Shared/notebook/py..."
             databricks workspace import "$notebook" "/Shared/notebook/py/$NOTEBOOK_NAME" \
               --language PYTHON --overwrite
           done
 
+      # 🔹 Paso 4: Subir archivos de data a DBFS
+      - name: Subir archivos de data a DBFS
+        shell: bash
+        env:
+          DATABRICKS_HOST: "https://adb-34259498345146.6.azuredatabricks.net"
+          DATABRICKS_TOKEN: ${{ steps.get-creds.outputs.DATABRICKS_TOKEN }}
+          PATH: ${{ env.PATH }}:~/databricks-env/bin
+        run: |
+          source ~/databricks-env/bin/activate
+
+          databricks fs mkdirs dbfs:/FileStore/data
+
+          for file in data/*; do
+            echo "📤 Subiendo $file a DBFS..."
+            databricks fs cp "$file" dbfs:/FileStore/data/ --overwrite
+          done
+
+      # 🔹 Paso 5: Crear Job Workflow en Databricks
       - name: Crear Job Workflow en Databricks
         shell: bash
         env:
@@ -70,12 +87,10 @@ jobs:
 
           for job_file in jobs/*.json; do
             echo "🚀 Creando job workflow desde $job_file..."
-
-            # Usamos redirección < en vez de cat (funciona en shells mínimos)
             databricks jobs create --version=2.1 --json "$( < "$job_file" )"
           done
 
-      # 🔹 Paso 5: Ejecutar Job Workflow y validar resultado (sin grep/jq/awk)
+      # 🔹 Paso 6: Ejecutar Job Workflow y validar resultado
       - name: Ejecutar Job Workflow y verificar
         shell: bash
         env:
@@ -89,11 +104,9 @@ jobs:
             JOB_NAME=$(python3 -c "import json;print(json.load(open('$job_file'))['name'])")
             echo "Ejecutando job workflow $JOB_NAME..."
 
-            # Crear el job y obtener job_id
             JOB_JSON=$(databricks jobs create --json "$( < "$job_file" )")
             JOB_ID=$(python3 -c "import sys,json;print(json.load(sys.stdin)['job_id'])" <<< "$JOB_JSON")
 
-            # Ejecutar el job
             RUN_JSON=$(databricks jobs run-now --job-id "$JOB_ID")
             RUN_ID=$(python3 -c "import sys,json;print(json.load(sys.stdin)['run_id'])" <<< "$RUN_JSON")
 
@@ -113,10 +126,27 @@ jobs:
                   echo "❌ Job $JOB_NAME falló con resultado: $RESULT"
                   echo "📜 Mostrando logs de la ejecución:"
                   databricks runs get-output --run-id "$RUN_ID" | python3 -m json.tool
-                  # 🔹 Forzar error desde Python
                   python3 -c "import sys; sys.exit(1)"
                 fi
               fi
-              python3 -c "import time; time.sleep(15)"   # ⬅️ reemplazo de sleep
+              python3 -c "import time; time.sleep(15)"
             done
           done
+
+      # 🔹 Paso 7: Descargar outputs desde DBFS
+      - name: Descargar outputs de DBFS
+        shell: bash
+        env:
+          DATABRICKS_HOST: "https://adb-34259498345146.6.azuredatabricks.net"
+          DATABRICKS_TOKEN: ${{ steps.get-creds.outputs.DATABRICKS_TOKEN }}
+          PATH: ${{ env.PATH }}:~/databricks-env/bin
+        run: |
+          source ~/databricks-env/bin/activate
+          OUTPUT_DIR=outputs/
+          DBFS_DIR=dbfs:/FileStore/jobs_output/
+          mkdir -p "$OUTPUT_DIR"
+
+          echo "📥 Descargando resultados de $DBFS_DIR a $OUTPUT_DIR"
+          databricks fs cp -r "$DBFS_DIR" "$OUTPUT_DIR"
+          echo "✅ Outputs listos en $OUTPUT_DIR"
+          ls -R "$OUTPUT_DIR"

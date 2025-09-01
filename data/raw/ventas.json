@@ -1,0 +1,6 @@
+[
+  {"cliente_id": 1, "producto": "Zapatillas", "monto": 120.5},
+  {"cliente_id": 2, "producto": "Camiseta", "monto": 45.0},
+  {"cliente_id": 3, "producto": "Pelota", "monto": 30.0},
+  {"cliente_id": 1, "producto": "Shorts", "monto": 25.5}
+]
