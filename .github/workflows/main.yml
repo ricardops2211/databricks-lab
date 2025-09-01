@@ -113,9 +113,10 @@ jobs:
 
           for job_file in jobs/*.json; do
             JOB_NAME=$(python3 -c "import json;print(json.load(open('$job_file'))['name'])")
-            JOB_ID=$(python3 -c "import json; print(json.load(open('$job_file'))['job_id'])")  # Leer JOB_ID del JSON existente
-            
-            echo "Verificando job workflow existente: $JOB_NAME (ID: $JOB_ID)..."
+            echo "Ejecutando job workflow $JOB_NAME..."
+
+            JOB_JSON=$(databricks jobs create --json "$( < "$job_file" )")
+            JOB_ID=$(python3 -c "import sys,json;print(json.load(sys.stdin)['job_id'])" <<< "$JOB_JSON")
 
             RUN_JSON=$(databricks jobs run-now --job-id "$JOB_ID")
             RUN_ID=$(python3 -c "import sys,json;print(json.load(sys.stdin)['run_id'])" <<< "$RUN_JSON")
@@ -143,6 +144,7 @@ jobs:
               wait_seconds 15
             done
           done
+
 
       # 🔹 Paso 7: Descargar outputs desde DBFS
       - name: Descargar outputs de DBFS
