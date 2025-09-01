@@ -224,3 +224,9 @@ jobs:
           # Listar archivos usando Python
           echo "📄 Listado de archivos en $OUTPUT_DIR:"
           python3 -c "import os; [print(os.path.join(dp, f)) for dp, dn, filenames in os.walk('$OUTPUT_DIR') for f in filenames]"
+
+      - name: Upload outputs as artifacts
+        uses: actions/upload-artifact@v3
+        with:
+          name: job-outputs
+          path: outputs/
