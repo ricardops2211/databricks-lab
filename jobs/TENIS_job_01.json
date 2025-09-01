@@ -7,7 +7,6 @@
         "notebook_path": "/Shared/notebook/py/archivopython.py"
       },
       "new_cluster": {
-        "cluster_name": "Quick_Cluster_Stable_WestUS",
         "spark_version": "15.3.x-scala2.12",
         "node_type_id": "Standard_DS3_v2",
         "num_workers": 0,
@@ -17,12 +16,10 @@
           "zone_id": "1"
         },
         "runtime_engine": "PHOTON",
-        "is_single_node": true,
-        "data_security_mode": "DATA_SECURITY_MODE_AUTO"
+        "is_single_node": true
       },
       "timeout_seconds": 3600
     }
   ],
-  "max_concurrent_runs": 1,
-  "format": "SINGLE_TASK"
+  "max_concurrent_runs": 1
 }
