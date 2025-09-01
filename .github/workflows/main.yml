@@ -68,15 +68,13 @@ jobs:
         run: |
           source ~/databricks-env/bin/activate
 
-          # Forzar siempre Jobs API 2.1
-          databricks jobs configure --version=2.1
-
           for job_file in jobs/*.json; do
             echo "🚀 Creando job workflow desde $job_file..."
 
-            # Crear job en Databricks directamente (sin jq)
-            databricks jobs create --json "$(cat "$job_file")"
+            # Usamos redirección < en vez de cat (funciona en shells mínimos)
+            databricks jobs create --version=2.1 --json "$( < "$job_file" )"
           done
+
 
 
 
