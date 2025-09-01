@@ -11,11 +11,11 @@
         }
       },
       "new_cluster": {
-        "spark_version": "15.3.x-scala2.12",
-        "node_type_id": "Standard_D3_v2",
-        "driver_node_type_id": "Standard_D3_v2",
-        "num_workers": 0,
-        "runtime_engine": "PHOTON",
+  "spark_version": "15.3.x-scala2.12",
+  "node_type_id": "Standard_DS3_v2",
+  "driver_node_type_id": "Standard_DS3_v2",
+  "num_workers": 0,
+  "runtime_engine": "PHOTON",
         "azure_attributes": {
           "availability": "ON_DEMAND_AZURE"
         },

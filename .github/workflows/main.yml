@@ -132,12 +132,13 @@ jobs:
                   echo "❌ Job $JOB_NAME falló con resultado: $RESULT"
                   echo "📜 Mostrando logs de la ejecución:"
                   databricks runs get-output --run-id "$RUN_ID" | python3 -m json.tool
-                  python3 -c "import sys; sys.exit(1)"
+                  exit 1  # 🔹 Sale del workflow inmediatamente
                 fi
               fi
-              python3 -c "import time; time.sleep(15)"
+              sleep 15
             done
           done
+
 
       # 🔹 Paso 7: Descargar outputs desde DBFS
       - name: Descargar outputs de DBFS
