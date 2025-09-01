@@ -1,5 +1,5 @@
 {
-  "name": "JOB-SHETTY-AUSTRALIA-PODCAST",
+  "name": "JOB-SHETTY-AUSTRALIA-PODCAST-0101",
   "tasks": [
     {
       "task_key": "etl_task",
@@ -11,13 +11,25 @@
         }
       },
       "new_cluster": {
+        "spark_version": "16.4.x-scala2.12",
+        "node_type_id": "Standard_B1s",
+        "driver_node_type_id": "Standard_B1s",
+        "num_workers": 0,
+        "is_single_node": true,
+        "runtime_engine": "PHOTON",
+        "kind": "CLASSIC_PREVIEW",
         "data_security_mode": "LEGACY_SINGLE_USER_STANDARD",
         "single_user_name": "rpachas@grupocinte.com",
-        "kind": "CLASSIC_PREVIEW",
-        "runtime_engine": "PHOTON",
-        "spark_version": "16.4.x-scala2.12",
-        "node_type_id": "Standard_D4pds_v6",
-        "is_single_node": true
+        "spark_conf": {
+          "spark.databricks.pyspark.enableProcessIsolation": "true"
+        },
+        "libraries": [
+          { "pypi": { "package": "pandas" } },
+          { "pypi": { "package": "numpy" } }
+        ],
+        "azure_attributes": {
+          "availability": "ON_DEMAND_AZURE"
+        }
       },
       "timeout_seconds": 3600
     }
