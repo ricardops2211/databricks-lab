@@ -117,10 +117,6 @@ jobs:
           PARAM_FILE="dbfs:/FileStore/jobs_data/config/parametros.yaml"
           if databricks fs ls "$PARAM_FILE" >/dev/null 2>&1; then
             echo "✅ parametros.yaml existe en DBFS"
-
-            # Mostrar las primeras 20 líneas de parametros.yaml
-            echo "📄 Contenido de parametros.yaml (primeras líneas):"
-            databricks fs cat "$PARAM_FILE" | head -n 20
           else
             echo "❌ parametros.yaml NO existe en DBFS"
             exit 1
