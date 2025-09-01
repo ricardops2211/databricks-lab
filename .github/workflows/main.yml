@@ -39,6 +39,8 @@ jobs:
           dbToken=$(vault kv get -field=DATABRICKS_TOKEN secret/azure)
           echo "DATABRICKS_TOKEN=$dbToken" >> $GITHUB_OUTPUT
 
+          
+
       # 🔹 Paso 3: Importar notebooks en /Shared/notebook/py
       - name: Importar notebooks en Databricks
         shell: bash
@@ -48,6 +50,7 @@ jobs:
           PATH: ${{ env.PATH }}:~/databricks-env/bin
         run: |
           source ~/databricks-env/bin/activate
+
           databricks workspace mkdirs /Shared/notebook/py
 
           for notebook in notebooks/*.py; do
@@ -66,6 +69,7 @@ jobs:
           PATH: ${{ env.PATH }}:~/databricks-env/bin
         run: |
           source ~/databricks-env/bin/activate
+
           databricks fs mkdirs dbfs:/FileStore/data
 
           for file in data/*; do
@@ -88,6 +92,7 @@ jobs:
           PATH: ${{ env.PATH }}:~/databricks-env/bin
         run: |
           source ~/databricks-env/bin/activate
+
           for job_file in jobs/*.json; do
             echo "🚀 Creando job workflow desde $job_file..."
             databricks jobs create --version=2.1 --json "$( < "$job_file" )"
@@ -102,9 +107,6 @@ jobs:
           PATH: ${{ env.PATH }}:~/databricks-env/bin
         run: |
           source ~/databricks-env/bin/activate
-
-          # Función local para reemplazar sleep sin sudo
-          wait_seconds() { bash -c "read -t $1 -p ''"; }
 
           for job_file in jobs/*.json; do
             JOB_NAME=$(python3 -c "import json;print(json.load(open('$job_file'))['name'])")
@@ -132,12 +134,13 @@ jobs:
                   echo "❌ Job $JOB_NAME falló con resultado: $RESULT"
                   echo "📜 Mostrando logs de la ejecución:"
                   databricks runs get-output --run-id "$RUN_ID" | python3 -m json.tool
-                  exit 1
+                  exit 1  # 🔹 Sale del workflow inmediatamente
                 fi
               fi
-              wait_seconds 15
+              sleep 15
             done
           done
+
 
       # 🔹 Paso 7: Descargar outputs desde DBFS
       - name: Descargar outputs de DBFS
