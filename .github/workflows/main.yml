@@ -97,7 +97,6 @@ jobs:
             databricks jobs create --version=2.1 --json "$( < "$job_file" )"
           done
 
-      # 🔹 Paso 6: Ejecutar Job Workflow y validar resultado
       - name: Ejecutar Job Workflow y verificar
         shell: bash
         env:
@@ -107,12 +106,9 @@ jobs:
         run: |
           source ~/databricks-env/bin/activate
 
-          # Función de espera usando Python
+          # Función portable para sleep
           wait_seconds() {
-              python3 - <<END
-import time
-time.sleep($1)
-END
+            python3 -c "import time; time.sleep($1)"
           }
 
           for job_file in jobs/*.json; do
@@ -144,7 +140,7 @@ END
                 fi
               fi
 
-              # Usar la función de Python en lugar de sleep
+              # Reemplazo de sleep
               wait_seconds 15
             done
           done
