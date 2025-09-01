@@ -1,5 +1,5 @@
 {
-  "name": "JOB-WOKFLOW-AROUND-OYTHON",
+  "name": "RUN_PYTHON_HP_01",
   "tasks": [
     {
       "task_key": "etl_task",

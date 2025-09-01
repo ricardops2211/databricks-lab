@@ -69,8 +69,9 @@ jobs:
         run: |
           source ~/databricks-env/bin/activate
 
-          # Crear carpeta de datos
+          # Crear carpeta de data y raw
           databricks fs mkdirs dbfs:/FileStore/data
+          databricks fs mkdirs dbfs:/FileStore/jobs_data/raw
 
           # Subir archivos/carpetas de data
           for file in data/*; do
@@ -84,6 +85,10 @@ jobs:
             fi
           done
 
+          # Subir archivos específicos a jobs_data/raw
+          databricks fs cp data/raw/clientes.csv dbfs:/FileStore/jobs_data/raw/clientes.csv --overwrite
+          databricks fs cp data/raw/ventas.json dbfs:/FileStore/jobs_data/raw/ventas.json --overwrite
+
           # Crear carpeta de configuración
           databricks fs mkdirs dbfs:/FileStore/jobs_data/config
 
@@ -94,10 +99,14 @@ jobs:
           echo "📂 Listado de dbfs:/FileStore/data"
           databricks fs ls dbfs:/FileStore/data
 
+          echo "📂 Listado de dbfs:/FileStore/jobs_data/raw"
+          databricks fs ls dbfs:/FileStore/jobs_data/raw
+
           echo "📂 Listado de dbfs:/FileStore/jobs_data/config"
           databricks fs ls dbfs:/FileStore/jobs_data/config
 
 
+      # 🔹 Paso 5: Verificar archivos subidos
       - name: Verificar archivos subidos a DBFS
         shell: bash
         env:
@@ -110,6 +119,9 @@ jobs:
           echo "📂 Listando archivos en dbfs:/FileStore/data"
           databricks fs ls dbfs:/FileStore/data
 
+          echo "📂 Listando archivos en dbfs:/FileStore/jobs_data/raw"
+          databricks fs ls dbfs:/FileStore/jobs_data/raw
+
           echo "📂 Listando archivos en dbfs:/FileStore/jobs_data/config"
           databricks fs ls dbfs:/FileStore/jobs_data/config
 
@@ -121,6 +133,7 @@ jobs:
             echo "❌ parametros.yaml NO existe en DBFS"
             exit 1
           fi
+
 
 
 
