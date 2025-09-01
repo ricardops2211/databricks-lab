@@ -210,9 +210,12 @@ jobs:
           PATH: ${{ env.PATH }}:~/databricks-env/bin
         run: |
           source ~/databricks-env/bin/activate
+
           OUTPUT_DIR=outputs/
           DBFS_DIR=dbfs:/FileStore/jobs_output/
-          mkdir -p "$OUTPUT_DIR"
+
+          # Crear directorio local con Python
+          python3 -c "import os; os.makedirs('$OUTPUT_DIR', exist_ok=True)"
 
           echo "📥 Descargando resultados de $DBFS_DIR a $OUTPUT_DIR"
           databricks fs cp -r "$DBFS_DIR" "$OUTPUT_DIR"
