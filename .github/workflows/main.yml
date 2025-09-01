@@ -59,8 +59,8 @@ jobs:
               --language PYTHON --overwrite
           done
 
-      # 🔹 Paso 4: Subir archivos de data a DBFS
-      - name: Subir archivos de data a DBFS
+      # 🔹 Paso 4: Subir archivos de data y configuración a DBFS
+      - name: Subir archivos de data y config a DBFS
         shell: bash
         env:
           DATABRICKS_HOST: "https://adb-2011990214744919.19.azuredatabricks.net"
@@ -69,8 +69,10 @@ jobs:
         run: |
           source ~/databricks-env/bin/activate
 
+          # Crear carpeta de datos
           databricks fs mkdirs dbfs:/FileStore/data
 
+          # Subir archivos/carpetas de data
           for file in data/*; do
             FILENAME="${file##*/}"
             if [ -d "$file" ]; then
@@ -81,6 +83,20 @@ jobs:
               databricks fs cp "$file" dbfs:/FileStore/data/$FILENAME --overwrite
             fi
           done
+
+          # Crear carpeta de configuración
+          databricks fs mkdirs dbfs:/FileStore/jobs_data/config
+
+          # Subir parametros.yaml
+          databricks fs cp data/config/parametros.yaml dbfs:/FileStore/jobs_data/config/parametros.yaml --overwrite
+
+          # Verificar archivos subidos
+          echo "📂 Listado de dbfs:/FileStore/data"
+          databricks fs ls dbfs:/FileStore/data
+
+          echo "📂 Listado de dbfs:/FileStore/jobs_data/config"
+          databricks fs ls dbfs:/FileStore/jobs_data/config
+
 
       - name: Verificar archivos subidos a DBFS
         shell: bash
