@@ -12,7 +12,6 @@
         "driver_node_type_id": "Standard_DS3_v2",
         "num_workers": 2,
         "runtime_engine": "PHOTON",
-        "autotermination_minutes": 20,
         "azure_attributes": {
           "availability": "ON_DEMAND_AZURE",
           "zone_id": "1"
