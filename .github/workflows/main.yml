@@ -146,6 +146,7 @@ jobs:
           PATH: ${{ env.PATH }}:~/databricks-env/bin
         run: |
           source ~/databricks-env/bin/activate
+          databricks jobs configure --version=2.1
           python3 codigo/jobsdatabricks.py
 
 
