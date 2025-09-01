@@ -71,8 +71,14 @@ jobs:
           databricks fs mkdirs dbfs:/FileStore/data
 
           for file in data/*; do
-            echo "📤 Subiendo $file a DBFS..."
-            databricks fs cp "$file" dbfs:/FileStore/data/ --overwrite
+            FILENAME="${file##*/}"
+            if [ -d "$file" ]; then
+              echo "📤 Subiendo carpeta $FILENAME a DBFS..."
+              databricks fs cp -r "$file" dbfs:/FileStore/data/$FILENAME --overwrite
+            else
+              echo "📤 Subiendo archivo $FILENAME a DBFS..."
+              databricks fs cp "$file" dbfs:/FileStore/data/$FILENAME --overwrite
+            fi
           done
 
       # 🔹 Paso 5: Crear Job Workflow en Databricks
