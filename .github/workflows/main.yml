@@ -141,13 +141,11 @@ jobs:
       - name: Crear/Editar Job Workflow en Databricks
         shell: bash
         env:
-          DATABRICKS_HOST: ${{ secrets.DATABRICKS_HOST }}
-          DATABRICKS_TOKEN: ${{ secrets.DATABRICKS_TOKEN }}
+          DATABRICKS_HOST: "https://adb-2011990214744919.19.azuredatabricks.net
+          DATABRICKS_TOKEN: ${{ steps.get-creds.outputs.DATABRICKS_TOKEN }}
           PATH: ${{ env.PATH }}:~/databricks-env/bin
         run: |
           source ~/databricks-env/bin/activate
-          # Forzar versión CLI Jobs 2.1
-          databricks jobs configure --version=2.1
           python3 codigo/jobsdatabricks.py
 
 
