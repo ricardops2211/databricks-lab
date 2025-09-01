@@ -9,14 +9,15 @@
       "new_cluster": {
         "spark_version": "15.3.x-scala2.12",
         "node_type_id": "Standard_DS3_v2",
+        "driver_node_type_id": "Standard_DS3_v2",
         "num_workers": 0,
+        "is_single_node": true,
+        "runtime_engine": "PHOTON",
         "autotermination_minutes": 20,
         "azure_attributes": {
           "availability": "ON_DEMAND_AZURE",
           "zone_id": "1"
-        },
-        "runtime_engine": "PHOTON",
-        "is_single_node": true
+        }
       },
       "timeout_seconds": 1800
     }
