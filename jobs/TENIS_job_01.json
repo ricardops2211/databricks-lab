@@ -16,7 +16,6 @@
         "spark_version": "13.3.x-scala2.12",
         "node_type_id": "Standard_D4pds_v6",
         "is_single_node": true,
-        "autotermination_minutes": 120,
         "runtime_engine": "PHOTON",
         "data_security_mode": "LEGACY_SINGLE_USER_STANDARD",
         "single_user_name": "rpachas@grupocinte.com",
