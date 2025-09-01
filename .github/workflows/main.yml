@@ -220,4 +220,7 @@ jobs:
           echo "📥 Descargando resultados de $DBFS_DIR a $OUTPUT_DIR"
           databricks fs cp -r "$DBFS_DIR" "$OUTPUT_DIR"
           echo "✅ Outputs listos en $OUTPUT_DIR"
-          ls -R "$OUTPUT_DIR"
+
+          # Listar archivos usando Python
+          echo "📄 Listado de archivos en $OUTPUT_DIR:"
+          python3 -c "import os; [print(os.path.join(dp, f)) for dp, dn, filenames in os.walk('$OUTPUT_DIR') for f in filenames]"
