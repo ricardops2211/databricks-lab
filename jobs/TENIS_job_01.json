@@ -1,5 +1,5 @@
 {
-  "name": "RUN_PYTHON_SINGLE_NODE",
+  "name": "RUN_JOB_WORKFLOW_MELODY",
   "tasks": [
     {
       "task_key": "etl_task",
@@ -10,20 +10,7 @@
           "output_path": "dbfs:/FileStore/jobs_output/"
         }
       },
-      "new_cluster": {
-  "spark_version": "16.4.x-scala2.12",
-  "node_type_id": "Standard_DS3_v2",
-  "driver_node_type_id": "Standard_DS3_v2",
-  "num_workers": 0,
-  "is_single_node": true,
-  "runtime_engine": "PHOTON",
-  "libraries": [
-    { "pypi": { "package": "pandas" } },
-    { "pypi": { "package": "numpy" } },
-    { "pypi": { "package": "pyyaml" } }
-  ],
-  "kind": "CLASSIC_PREVIEW"
-},
+      "existing_cluster_id": "0901-081841-j37otbqa",
       "timeout_seconds": 3600
     }
   ],
