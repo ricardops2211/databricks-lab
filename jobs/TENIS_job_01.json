@@ -13,7 +13,6 @@
       "new_cluster": {
         "data_security_mode": "LEGACY_SINGLE_USER_STANDARD",
         "single_user_name": "rpachas@grupocinte.com",
-        "cluster_name": "cluster_op01",
         "kind": "CLASSIC_PREVIEW",
         "runtime_engine": "PHOTON",
         "spark_version": "16.4.x-scala2.12",
