@@ -1,5 +1,5 @@
 {
-  "name": "JOB-SHETTY-AUSTRALIA-PODCAST-0101",
+  "name": "JOB-SHETTY-AUSTRALIA-PODCAST",
   "tasks": [
     {
       "task_key": "etl_task",
@@ -11,13 +11,13 @@
         }
       },
       "new_cluster": {
+        "kind": "CLASSIC_PREVIEW",
         "spark_version": "16.4.x-scala2.12",
-        "node_type_id": "Standard_B1s",
-        "driver_node_type_id": "Standard_B1s",
+        "node_type_id": "Standard_D3_v2",
+        "driver_node_type_id": "Standard_D3_v2",
         "num_workers": 0,
         "is_single_node": true,
         "runtime_engine": "PHOTON",
-        "kind": "CLASSIC_PREVIEW",
         "data_security_mode": "LEGACY_SINGLE_USER_STANDARD",
         "single_user_name": "rpachas@grupocinte.com",
         "spark_conf": {
