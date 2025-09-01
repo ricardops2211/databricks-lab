@@ -7,6 +7,7 @@ import sys
 # Variables de entorno necesarias
 DATABRICKS_HOST = os.getenv("DATABRICKS_HOST")
 DATABRICKS_TOKEN = os.getenv("DATABRICKS_TOKEN")
+print(f"Usando token DATABRICKS_TOKEN: {'*' * 8}...")  # nunca imprimir complet
 
 if not DATABRICKS_HOST or not DATABRICKS_TOKEN:
     print("❌ Faltan variables de entorno DATABRICKS_HOST o DATABRICKS_TOKEN")
