@@ -1,10 +1,10 @@
 {
-  "name": "TENNIS US OPEN-PLUS",
+  "name": "JOB-WORKFLOW-GLANDSLAM",
   "tasks": [
     {
       "task_key": "etl_task",
       "notebook_task": {
-        "notebook_path": "/Shared/notebook/py/uno.py"
+        "notebook_path": "/Shared/notebook/py/archivopython.py"
       },
       "new_cluster": {
         "cluster_name": "Quick_Cluster_Stable_WestUS",
@@ -14,7 +14,7 @@
         "autotermination_minutes": 30,
         "azure_attributes": {
           "availability": "ON_DEMAND_AZURE",
-          "zone_id": "1" 
+          "zone_id": "1"
         },
         "runtime_engine": "PHOTON",
         "is_single_node": true,
