@@ -11,24 +11,15 @@
         }
       },
       "new_cluster": {
-        "cluster_name": "Cluster_lop",
-        "kind": "CLASSIC_PREVIEW",
-        "spark_version": "13.3.x-scala2.12",
-        "node_type_id": "Standard_D4pds_v6",
-        "is_single_node": true,
-        "runtime_engine": "PHOTON",
         "data_security_mode": "LEGACY_SINGLE_USER_STANDARD",
         "single_user_name": "rpachas@grupocinte.com",
-        "spark_conf": {
-          "spark.databricks.pyspark.enableProcessIsolation": "true"
-        },
-        "libraries": [
-          { "pypi": { "package": "pandas" } },
-          { "pypi": { "package": "numpy" } }
-        ],
-        "azure_attributes": {
-          "availability": "ON_DEMAND_AZURE"
-        }
+        "cluster_name": "cluster_op01",
+        "kind": "CLASSIC_PREVIEW",
+        "runtime_engine": "PHOTON",
+        "spark_version": "16.4.x-scala2.12",
+        "node_type_id": "Standard_D4pds_v6",
+        "autotermination_minutes": 120,
+        "is_single_node": true
       },
       "timeout_seconds": 3600
     }
