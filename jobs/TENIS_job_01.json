@@ -18,7 +18,6 @@
         "runtime_engine": "PHOTON",
         "spark_version": "16.4.x-scala2.12",
         "node_type_id": "Standard_D4pds_v6",
-        "autotermination_minutes": 120,
         "is_single_node": true
       },
       "timeout_seconds": 3600
