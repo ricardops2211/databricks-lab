@@ -44,7 +44,7 @@ jobs:
       - name: Importar notebooks en Databricks
         shell: bash
         env:
-          DATABRICKS_HOST: "https://adb-34259498345146.6.azuredatabricks.net"
+          DATABRICKS_HOST: "https://adb-2011990214744919.19.azuredatabricks.net"
           DATABRICKS_TOKEN: ${{ steps.get-creds.outputs.DATABRICKS_TOKEN }}
           PATH: ${{ env.PATH }}:~/databricks-env/bin
         run: |
@@ -63,7 +63,7 @@ jobs:
       - name: Subir archivos de data a DBFS
         shell: bash
         env:
-          DATABRICKS_HOST: "https://adb-34259498345146.6.azuredatabricks.net"
+          DATABRICKS_HOST: "https://adb-2011990214744919.19.azuredatabricks.net"
           DATABRICKS_TOKEN: ${{ steps.get-creds.outputs.DATABRICKS_TOKEN }}
           PATH: ${{ env.PATH }}:~/databricks-env/bin
         run: |
@@ -86,7 +86,7 @@ jobs:
       - name: Crear Job Workflow en Databricks
         shell: bash
         env:
-          DATABRICKS_HOST: "https://adb-34259498345146.6.azuredatabricks.net"
+          DATABRICKS_HOST: "https://adb-2011990214744919.19.azuredatabricks.net"
           DATABRICKS_TOKEN: ${{ steps.get-creds.outputs.DATABRICKS_TOKEN }}
           PATH: ${{ env.PATH }}:~/databricks-env/bin
         run: |
@@ -100,7 +100,7 @@ jobs:
       - name: Ejecutar Job Workflow y verificar
         shell: bash
         env:
-          DATABRICKS_HOST: "https://adb-34259498345146.6.azuredatabricks.net"
+          DATABRICKS_HOST: "https://adb-2011990214744919.19.azuredatabricks.net"
           DATABRICKS_TOKEN: ${{ steps.get-creds.outputs.DATABRICKS_TOKEN }}
           PATH: ${{ env.PATH }}:~/databricks-env/bin
         run: |
@@ -150,7 +150,7 @@ jobs:
       - name: Descargar outputs de DBFS
         shell: bash
         env:
-          DATABRICKS_HOST: "https://adb-34259498345146.6.azuredatabricks.net"
+          DATABRICKS_HOST: "https://adb-2011990214744919.19.azuredatabricks.net"
           DATABRICKS_TOKEN: ${{ steps.get-creds.outputs.DATABRICKS_TOKEN }}
           PATH: ${{ env.PATH }}:~/databricks-env/bin
         run: |
