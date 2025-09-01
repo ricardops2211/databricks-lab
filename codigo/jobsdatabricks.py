@@ -7,8 +7,9 @@ import sys
 # Variables de entorno necesarias
 DATABRICKS_HOST = os.getenv("DATABRICKS_HOST")
 DATABRICKS_TOKEN = os.getenv("DATABRICKS_TOKEN")
-print(f"Usando token DATABRICKS_TOKEN: {'*'*8}...")
 
+# Mostrar token de manera segura
+print(f"Usando token DATABRICKS_TOKEN: {'*'*8}...")
 
 if not DATABRICKS_HOST or not DATABRICKS_TOKEN:
     print("❌ Faltan variables de entorno DATABRICKS_HOST o DATABRICKS_TOKEN")
@@ -23,15 +24,16 @@ def run_cmd(cmd):
         sys.exit(1)
     return result.stdout
 
-# Listar todos los jobs existentes
+# Listar todos los jobs existentes usando API 2.1
 jobs_list_json = run_cmd("databricks jobs list --output JSON")
 jobs_list = json.loads(jobs_list_json).get("jobs", [])
 
 # Guardar resumen
 summary = []
 
-# Iterar sobre archivos de jobs
+# Directorio donde están los JSON de jobs
 jobs_dir = "jobs"
+
 for job_file in os.listdir(jobs_dir):
     if not job_file.endswith(".json"):
         continue
@@ -51,11 +53,12 @@ for job_file in os.listdir(jobs_dir):
     if existing_job:
         job_id = existing_job["job_id"]
         print(f"⚠️ Se detectó job workflow existente '{job_name}' (job_id={job_id}). Se procederá a resetear...")
-        run_cmd(f'databricks jobs reset --job-id {job_id} --json @"{job_path}"')
+        # Forzar Jobs API 2.1
+        run_cmd(f'databricks jobs reset --job-id {job_id} --json @"{job_path}" --version 2.1')
         summary.append({"name": job_name, "job_id": job_id, "action": "editado"})
     else:
         print(f"✅ No existe job workflow '{job_name}'. Se procederá a crear...")
-        output = run_cmd(f'databricks jobs create --version=2.1 --json @"{job_path}"')
+        output = run_cmd(f'databricks jobs create --version 2.1 --json @"{job_path}"')
         created_job_id = json.loads(output)["job_id"]
         summary.append({"name": job_name, "job_id": created_job_id, "action": "creado"})
 
