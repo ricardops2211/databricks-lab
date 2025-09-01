@@ -19,9 +19,7 @@ if not DATABRICKS_HOST or not DATABRICKS_TOKEN:
 def run_cmd(cmd):
     result = subprocess.run(cmd, shell=True, capture_output=True, text=True)
     if result.returncode != 0:
-        print(f"❌ Error ejecutando: {cmd}")
-        print(result.stderr)
-        sys.exit(1)
+        raise RuntimeError(f"Error ejecutando: {cmd}\n{result.stderr}")
     return result.stdout
 
 # Listar todos los jobs existentes usando API 2.1
@@ -52,10 +50,20 @@ for job_file in os.listdir(jobs_dir):
 
     if existing_job:
         job_id = existing_job["job_id"]
-        print(f"⚠️ Se detectó job workflow existente '{job_name}' (job_id={job_id}). Se procederá a resetear...")
-        # Forzar Jobs API 2.1
-        run_cmd(f'databricks jobs reset --job-id {job_id} --json @"{job_path}" --version 2.1')
-        summary.append({"name": job_name, "job_id": job_id, "action": "editado"})
+        print(f"⚠️ Se detectó job workflow existente '{job_name}' (job_id={job_id}). Se intentará resetear...")
+        try:
+            # Forzar Jobs API 2.1 en reset
+            run_cmd(f'databricks jobs reset --job-id {job_id} --json @"{job_path}" --version 2.1')
+            summary.append({"name": job_name, "job_id": job_id, "action": "editado"})
+        except RuntimeError as e:
+            print(f"❌ Reset falló para job '{job_name}': {e}")
+            print(f"⚠️ Se eliminará y recreará el job '{job_name}'...")
+            # Borrar job existente
+            run_cmd(f'databricks jobs delete --job-id {job_id}')
+            # Crear de nuevo
+            output = run_cmd(f'databricks jobs create --version 2.1 --json @"{job_path}"')
+            created_job_id = json.loads(output)["job_id"]
+            summary.append({"name": job_name, "job_id": created_job_id, "action": "recreado"})
     else:
         print(f"✅ No existe job workflow '{job_name}'. Se procederá a crear...")
         output = run_cmd(f'databricks jobs create --version 2.1 --json @"{job_path}"')
