@@ -1,5 +1,5 @@
 {
-  "name": "JOB-WORKFLOW-SINGLE-NODE",
+  "name": "JOB-WORKFLOW-MULTINODE",
   "tasks": [
     {
       "task_key": "etl_task",
@@ -10,8 +10,7 @@
         "spark_version": "15.3.x-scala2.12",
         "node_type_id": "Standard_DS3_v2",
         "driver_node_type_id": "Standard_DS3_v2",
-        "num_workers": 0,
-        "is_single_node": true,
+        "num_workers": 2,
         "runtime_engine": "PHOTON",
         "autotermination_minutes": 20,
         "azure_attributes": {
