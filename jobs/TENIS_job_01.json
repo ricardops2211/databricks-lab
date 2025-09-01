@@ -1,5 +1,5 @@
 {
-  "name": "JOB-SHETTY-AUSTRALIA-PODCAST",
+  "name": "JOB-SHETTY-AUSTRALIA-PODCAST-01-01",
   "tasks": [
     {
       "task_key": "etl_task",
@@ -10,24 +10,7 @@
           "output_path": "dbfs:/FileStore/jobs_output/"
         }
       },
-      "new_cluster": {
-        "kind": "CLASSIC_PREVIEW",
-        "spark_version": "16.4.x-scala2.12",
-        "node_type_id": "Standard_D3_v2",
-        "driver_node_type_id": "Standard_D3_v2",
-        "num_workers": 0,
-        "is_single_node": true,
-        "runtime_engine": "PHOTON",
-        "data_security_mode": "LEGACY_SINGLE_USER_STANDARD",
-        "single_user_name": "rpachas@grupocinte.com",
-        "libraries": [
-          { "pypi": { "package": "pandas" } },
-          { "pypi": { "package": "numpy" } }
-        ],
-        "azure_attributes": {
-          "availability": "ON_DEMAND_AZURE"
-        }
-      },
+      "existing_cluster_id": "0901-081841-j37otbqa",
       "timeout_seconds": 3600
     }
   ],
