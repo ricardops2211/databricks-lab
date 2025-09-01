@@ -59,7 +59,6 @@ jobs:
               --language PYTHON --overwrite
           done
 
-      # 🔹 Paso 4: Crear Job Workflow desde JSON
       - name: Crear Job Workflow en Databricks
         shell: bash
         env:
@@ -69,13 +68,19 @@ jobs:
         run: |
           source ~/databricks-env/bin/activate
 
-          # Configurar Jobs API a 2.1 (soluciona WARN y errores internos)
+          # Forzar siempre Jobs API 2.1
           databricks jobs configure --version=2.1
 
           for job_file in jobs/*.json; do
             echo "Creando job workflow desde $job_file..."
+            
+            # Validar JSON antes de enviarlo (debug útil)
+            jq . "$job_file" > /dev/null || { echo "❌ JSON inválido: $job_file"; exit 1; }
+
+            # Crear job en Databricks
             databricks jobs create --json "$( < "$job_file" )"
           done
+
 
 
       # 🔹 Paso 5: Ejecutar Job Workflow y validar resultado
