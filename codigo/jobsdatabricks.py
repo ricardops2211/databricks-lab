@@ -22,10 +22,6 @@ def run_cmd(cmd):
         raise RuntimeError(f"Error ejecutando: {cmd}\n{result.stderr}")
     return result.stdout
 
-# Listar todos los jobs existentes usando API 2.1
-jobs_list_json = run_cmd("databricks jobs list --output JSON")
-jobs_list = json.loads(jobs_list_json).get("jobs", [])
-
 # Guardar resumen
 summary = []
 
@@ -50,30 +46,15 @@ for job_file in os.listdir(jobs_dir):
         print(f"❌ El job {job_file} no tiene un campo 'name'")
         continue
 
-    # Verificar si el job existe
-    existing_job = next((job for job in jobs_list if job["settings"]["name"] == job_name), None)
-
-    if existing_job:
-        job_id = existing_job["job_id"]
-        print(f"⚠️ Se detectó job workflow existente '{job_name}' (job_id={job_id}). Se intentará modificar...")
-        try:
-            run_cmd(f'databricks jobs reset --job-id {job_id} --json @"{job_path}" --version 2.1')
-            summary.append({"name": job_name, "job_id": job_id, "action": "modificado"})
-        except RuntimeError as e:
-            print(f"❌ No se pudo modificar el job '{job_name}'. Error:\n{e}")
-            summary.append({"name": job_name, "job_id": job_id, "action": "fallido"})
-            # Continuar con los demás jobs
-            continue
-    else:
-        print(f"✅ No existe job workflow '{job_name}'. Se procederá a crear...")
-        try:
-            output = run_cmd(f'databricks jobs create --version 2.1 --json @"{job_path}"')
-            created_job_id = json.loads(output)["job_id"]
-            summary.append({"name": job_name, "job_id": created_job_id, "action": "creado"})
-        except RuntimeError as e:
-            print(f"❌ Error creando el job '{job_name}'. Error:\n{e}")
-            summary.append({"name": job_name, "job_id": None, "action": "fallido"})
-            continue
+    print(f"✅ Creando job workflow '{job_name}'...")
+    try:
+        output = run_cmd(f'databricks jobs create --version 2.1 --json @"{job_path}"')
+        created_job_id = json.loads(output)["job_id"]
+        summary.append({"name": job_name, "job_id": created_job_id, "action": "creado"})
+    except RuntimeError as e:
+        print(f"❌ Error creando el job '{job_name}'. Error:\n{e}")
+        summary.append({"name": job_name, "job_id": None, "action": "fallido"})
+        continue
 
 # Guardar resumen en JSON
 with open(summary_file, "w") as f:
