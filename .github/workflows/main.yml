@@ -114,39 +114,15 @@ jobs:
           databricks fs ls dbfs:/FileStore/jobs_data/config
 
           # Probar si parametros.yaml existe
-          if databricks fs ls dbfs:/FileStore/jobs_data/config/parametros.yaml >/dev/null 2>&1; then
-            echo "✅ parametros.yaml existe en DBFS"
-          else
-            echo "❌ parametros.yaml NO existe en DBFS"
-            exit 1
-          fi
-
-      - name: Inspeccionar archivos subidos a DBFS
-        shell: bash
-        env:
-          DATABRICKS_HOST: "https://adb-2011990214744919.19.azuredatabricks.net"
-          DATABRICKS_TOKEN: ${{ steps.get-creds.outputs.DATABRICKS_TOKEN }}
-          PATH: ${{ env.PATH }}:~/databricks-env/bin
-        run: |
-          source ~/databricks-env/bin/activate
-
-          echo "📂 Detalle de archivos en dbfs:/FileStore/data"
-          databricks fs ls dbfs:/FileStore/data | while read -r line; do
-            echo "$line"
-          done
-
-          echo "📂 Detalle de archivos en dbfs:/FileStore/jobs_data/config"
-          databricks fs ls dbfs:/FileStore/jobs_data/config | while read -r line; do
-            echo "$line"
-          done
-
-          # Comprobar especificamente parametros.yaml
           PARAM_FILE="dbfs:/FileStore/jobs_data/config/parametros.yaml"
           if databricks fs ls "$PARAM_FILE" >/dev/null 2>&1; then
-            echo "✅ Archivo encontrado: $PARAM_FILE"
-            databricks fs head "$PARAM_FILE"  # Muestra las primeras líneas
+            echo "✅ parametros.yaml existe en DBFS"
+
+            # Mostrar las primeras 20 líneas de parametros.yaml
+            echo "📄 Contenido de parametros.yaml (primeras líneas):"
+            databricks fs head -n 20 "$PARAM_FILE"
           else
-            echo "❌ Archivo NO encontrado: $PARAM_FILE"
+            echo "❌ parametros.yaml NO existe en DBFS"
             exit 1
           fi
 
