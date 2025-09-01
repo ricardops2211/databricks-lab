@@ -20,9 +20,6 @@
         "runtime_engine": "PHOTON",
         "data_security_mode": "LEGACY_SINGLE_USER_STANDARD",
         "single_user_name": "rpachas@grupocinte.com",
-        "spark_conf": {
-          "spark.databricks.pyspark.enableProcessIsolation": "true"
-        },
         "libraries": [
           { "pypi": { "package": "pandas" } },
           { "pypi": { "package": "numpy" } }
