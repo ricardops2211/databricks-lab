@@ -1,5 +1,5 @@
 {
-  "name": "RUN_PYTHON_HP_01_02_nuevo",
+  "name": "RUN_PYTHON_SINGLE_NODE",
   "tasks": [
     {
       "task_key": "etl_task",
@@ -11,22 +11,21 @@
         }
       },
       "new_cluster": {
-        "spark_version": "13.3.x-scala2.12",
-        "node_type_id": "Standard_D4pds_v6",
-        "driver_node_type_id": "Standard_D4pds_v6",
+        "spark_version": "16.4.x-scala2.12",
+        "node_type_id": "Standard_B1ls",
+        "driver_node_type_id": "Standard_B1ls",
         "num_workers": 0,
         "is_single_node": true,
-        "kind": "CLASSIC_PREVIEW",
         "runtime_engine": "PHOTON",
-        "data_security_mode": "LEGACY_SINGLE_USER_STANDARD",
-        "single_user_name": "rpachas@grupocinte.com",
         "libraries": [
           { "pypi": { "package": "pandas" } },
           { "pypi": { "package": "numpy" } },
-          { "pypi": { "package": "PyYAML" } }
-        ]
+          { "pypi": { "package": "pyyaml" } }
+        ],
+        "kind": "CLASSIC_PREVIEW"
       },
       "timeout_seconds": 3600
     }
-  ]
+  ],
+  "max_concurrent_runs": 1
 }
