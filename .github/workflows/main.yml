@@ -1,4 +1,4 @@
-name: Databricks Login & Test (Linux Self-Hosted)
+name: Databricks-Job
 
 on:
   push:
