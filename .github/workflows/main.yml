@@ -40,6 +40,25 @@ jobs:
           echo "DATABRICKS_TOKEN=$dbToken" >> $GITHUB_OUTPUT
 
           
+      # 🔹 Paso 0.5: Instalar sleep localmente (sin sudo)
+      - name: Instalar sleep en $HOME
+        shell: sh
+        run: |
+          # Directorio local para binarios
+          mkdir -p $HOME/bin
+          export PATH=$HOME/bin:$PATH
+
+          # Descargar busybox (incluye sleep)
+          BUSYBOX_URL="https://busybox.net/downloads/binaries/1.35.0-i686-uclibc/busybox"
+          wget -O $HOME/bin/busybox $BUSYBOX_URL
+          chmod +x $HOME/bin/busybox
+
+          # Crear enlace simbólico a sleep
+          ln -sf $HOME/bin/busybox $HOME/bin/sleep
+
+          # Verificar
+          which sleep
+          sleep 2
 
       # 🔹 Paso 3: Importar notebooks en /Shared/notebook/py
       - name: Importar notebooks en Databricks
