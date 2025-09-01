@@ -1,5 +1,5 @@
 {
-  "name": "JOB-WORKFLOW-GLANDSLAM",
+  "name": "JOB-WORKFLOW-SINGLE-NODE",
   "tasks": [
     {
       "task_key": "etl_task",
@@ -10,7 +10,7 @@
         "spark_version": "15.3.x-scala2.12",
         "node_type_id": "Standard_DS3_v2",
         "num_workers": 0,
-        "autotermination_minutes": 30,
+        "autotermination_minutes": 20,
         "azure_attributes": {
           "availability": "ON_DEMAND_AZURE",
           "zone_id": "1"
@@ -18,7 +18,7 @@
         "runtime_engine": "PHOTON",
         "is_single_node": true
       },
-      "timeout_seconds": 3600
+      "timeout_seconds": 1800
     }
   ],
   "max_concurrent_runs": 1
