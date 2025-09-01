@@ -75,9 +75,6 @@ jobs:
             databricks jobs create --version=2.1 --json "$( < "$job_file" )"
           done
 
-
-
-
       # 🔹 Paso 5: Ejecutar Job Workflow y validar resultado (sin grep/jq/awk)
       - name: Ejecutar Job Workflow y verificar
         shell: bash
@@ -114,7 +111,10 @@ jobs:
                   break
                 else
                   echo "❌ Job $JOB_NAME falló con resultado: $RESULT"
-                  exit 1
+                  echo "📜 Mostrando logs de la ejecución:"
+                  databricks runs get-output --run-id "$RUN_ID" | python3 -m json.tool
+                  # 🔹 Forzar error desde Python
+                  python3 -c "import sys; sys.exit(1)"
                 fi
               fi
               python3 -c "import time; time.sleep(15)"   # ⬅️ reemplazo de sleep

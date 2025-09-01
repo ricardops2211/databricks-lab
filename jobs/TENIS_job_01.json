@@ -6,17 +6,17 @@
       "notebook_task": {
         "notebook_path": "/Shared/notebook/py/archivopython.py"
       },
-      "new_cluster": {
-        "spark_version": "15.3.x-scala2.12",
-        "node_type_id": "Standard_DS3_v2",
-        "driver_node_type_id": "Standard_DS3_v2",
-        "num_workers": 0,
-        "runtime_engine": "PHOTON",
-        "azure_attributes": {
-          "availability": "ON_DEMAND_AZURE",
-          "zone_id": "1"
-        }
-      },
+"new_cluster": {
+  "spark_version": "15.3.x-scala2.12",
+  "node_type_id": "Standard_DS2_v2",
+  "driver_node_type_id": "Standard_DS2_v2",
+  "num_workers": 0,
+  "runtime_engine": "PHOTON",
+  "azure_attributes": {
+    "availability": "ON_DEMAND_AZURE",
+    "zone_id": "1"
+  }
+},
       "timeout_seconds": 1800
     }
   ],
