@@ -11,11 +11,10 @@
         }
       },
       "new_cluster": {
-        "cluster_name": "Cluser_lop",
+        "cluster_name": "Cluster_lop",
+        "kind": "CLASSIC_PREVIEW",
         "spark_version": "13.3.x-scala2.12",
         "node_type_id": "Standard_D4pds_v6",
-        "driver_node_type_id": "Standard_D4pds_v6",
-        "num_workers": 0,
         "is_single_node": true,
         "autotermination_minutes": 120,
         "runtime_engine": "PHOTON",
