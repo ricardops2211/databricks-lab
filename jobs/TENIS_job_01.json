@@ -1,5 +1,5 @@
 {
-  "name": "JOB-WORKFLOW-SINGLE-NODE-PYTHON-01",
+  "name": "JOB-ELIAS-TENIS-01",
   "tasks": [
     {
       "task_key": "etl_task",
@@ -8,13 +8,12 @@
       },
 "new_cluster": {
   "spark_version": "15.3.x-scala2.12",
-  "node_type_id": "Standard_DS2_v2",
-  "driver_node_type_id": "Standard_DS2_v2",
+  "node_type_id": "Standard_D3_v2",
+  "driver_node_type_id": "Standard_D3_v2",
   "num_workers": 0,
   "runtime_engine": "PHOTON",
   "azure_attributes": {
-    "availability": "ON_DEMAND_AZURE",
-    "zone_id": "1"
+    "availability": "ON_DEMAND_AZURE"
   }
 },
       "timeout_seconds": 1800
