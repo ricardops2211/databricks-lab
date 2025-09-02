@@ -3,7 +3,7 @@
 import os, sys, json, glob, urllib.request, urllib.error, urllib.parse
 
 HOST = (os.getenv("DATABRICKS_HOST") or "").rstrip("/")
-TOKEN = os.getenv("DATABRICKS_TOKEN")
+TOKEN = os.getenv("DATABRICKS_TOKEN") or ""
 JOBS_DIR = os.getenv("JOBS_DIR", "jobs")
 JOB_IDS_PATH = os.getenv("JOB_IDS_PATH", ".gha/job_ids.json")
 

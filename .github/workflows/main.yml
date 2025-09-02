@@ -8,6 +8,9 @@ on:
 jobs:
   databricks-ejecucion:
     runs-on: self-hosted
+    env:
+      DATABRICKS_HOST: "https://adb-2011990214744919.19.azuredatabricks.net"
+      DATABRICKS_TOKEN: ${{ steps.get-creds.outputs.DATABRICKS_TOKEN }}
 
     steps:
       # 🔹 Paso 0: Checkout del repo
@@ -44,8 +47,6 @@ jobs:
       - name: Importar notebooks en Databricks
         shell: bash
         env:
-          DATABRICKS_HOST: "https://adb-2011990214744919.19.azuredatabricks.net"
-          DATABRICKS_TOKEN: ${{ steps.get-creds.outputs.DATABRICKS_TOKEN }}
           PATH: ${{ env.PATH }}:~/databricks-env/bin
         run: |
           source ~/databricks-env/bin/activate
@@ -63,8 +64,6 @@ jobs:
       - name: Subir archivos de data y config a DBFS
         shell: bash
         env:
-          DATABRICKS_HOST: "https://adb-2011990214744919.19.azuredatabricks.net"
-          DATABRICKS_TOKEN: ${{ steps.get-creds.outputs.DATABRICKS_TOKEN }}
           PATH: ${{ env.PATH }}:~/databricks-env/bin
         run: |
           source ~/databricks-env/bin/activate
@@ -110,8 +109,6 @@ jobs:
       - name: Verificar archivos subidos a DBFS
         shell: bash
         env:
-          DATABRICKS_HOST: "https://adb-2011990214744919.19.azuredatabricks.net"
-          DATABRICKS_TOKEN: ${{ steps.get-creds.outputs.DATABRICKS_TOKEN }}
           PATH: ${{ env.PATH }}:~/databricks-env/bin
         run: |
           source ~/databricks-env/bin/activate
@@ -138,8 +135,6 @@ jobs:
       - name: Crear/Actualizar Job(s) en Databricks (UPSERT)
         shell: bash
         env:
-          DATABRICKS_TOKEN: ${{ steps.get-creds.outputs.DATABRICKS_TOKEN }}
-          DATABRICKS_HOST: "https://adb-2011990214744919.19.azuredatabricks.net"
           JOBS_DIR: jobs
           JOB_IDS_PATH: .gha/job_ids.json
         run: |
@@ -150,8 +145,6 @@ jobs:
       - name: Ejecutar Job(s) y verificar
         shell: bash
         env:
-          DATABRICKS_TOKEN: ${{ steps.get-creds.outputs.DATABRICKS_TOKEN }}
-          DATABRICKS_HOST: "https://adb-2011990214744919.19.azuredatabricks.net"
           JOB_IDS_PATH: .gha/job_ids.json      # o define JOB_ID si vas a uno puntual
           POLL_SECONDS: "10"
           TAIL_INTERVAL: "10"
@@ -168,8 +161,6 @@ jobs:
       - name: Descargar outputs de DBFS
         shell: bash
         env:
-          DATABRICKS_HOST: "https://adb-2011990214744919.19.azuredatabricks.net"
-          DATABRICKS_TOKEN: ${{ steps.get-creds.outputs.DATABRICKS_TOKEN }}
           PATH: ${{ env.PATH }}:~/databricks-env/bin
         run: |
           source ~/databricks-env/bin/activate
