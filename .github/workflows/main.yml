@@ -45,6 +45,15 @@ jobs:
           # (Si igual quieres como output, puedes mantener:)
           echo "DATABRICKS_TOKEN=$dbToken" >> "$GITHUB_OUTPUT"
 
+      # 🔹 3) Sanity check de conexión
+      - name: Validar conexión a Databricks
+        shell: bash
+        run: |
+          set -Eeuo pipefail
+          databricks --version
+          # Lista raíz del workspace para verificar credenciales
+          databricks workspace ls / >/dev/null
+
       
       # 🔹 Paso 3: Importar notebooks en /Shared/notebook/py
       - name: Importar notebooks en Databricks
