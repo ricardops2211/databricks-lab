@@ -152,10 +152,12 @@ jobs:
         env:
           DATABRICKS_TOKEN: ${{ steps.get-creds.outputs.DATABRICKS_TOKEN }}
           DATABRICKS_HOST: "https://adb-2011990214744919.19.azuredatabricks.net"
-          JOB_IDS_PATH: .gha/job_ids.json
-          POLL_SECONDS: "15"
-          TIMEOUT_SECONDS: "3600"
-          CONTINUE_ON_FAILURE: "false"   # o "true" si quieres seguir aunque falle uno
+          JOB_IDS_PATH: .gha/job_ids.json      # o define JOB_ID si vas a uno puntual
+          POLL_SECONDS: "10"
+          TAIL_INTERVAL: "10"
+          TIMEOUT_SECONDS: "7200"
+          # Si tu destino no es el default, fija el base:
+          LOGS_DBFS_BASE: "dbfs:/cluster-logs"
         run: |
           set -Eeuo pipefail
           python3 scripts/execute-jobdatabricks.py

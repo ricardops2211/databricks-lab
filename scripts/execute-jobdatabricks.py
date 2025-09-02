@@ -1,108 +1,168 @@
 #!/usr/bin/env python3
-# scripts/databricks_run_jobs.py
-import os, sys, json, time, urllib.request, urllib.error, urllib.parse
+import os, sys, time, json, base64, urllib.request, urllib.parse, urllib.error
 
 HOST = (os.getenv("DATABRICKS_HOST") or "").rstrip("/")
-TOKEN = os.getenv("DATABRICKS_TOKEN")
+TOKEN = os.getenv("DATABRICKS_TOKEN") or ""
+JOB_ID = os.getenv("JOB_ID")               # opcional; si no, lee de .gha/job_ids.json
 JOB_IDS_PATH = os.getenv("JOB_IDS_PATH", ".gha/job_ids.json")
-POLL_SECONDS = int(os.getenv("POLL_SECONDS", "15"))
-TIMEOUT_SECONDS = int(os.getenv("TIMEOUT_SECONDS", "3600"))  # 60 min
-CONTINUE_ON_FAILURE = os.getenv("CONTINUE_ON_FAILURE", "false").lower() in ("1","true","yes")
+POLL_SECONDS = int(os.getenv("POLL_SECONDS", "10"))
+TAIL_INTERVAL = int(os.getenv("TAIL_INTERVAL", "10"))    # cada cuánto leer DBFS
+TIMEOUT_SECONDS = int(os.getenv("TIMEOUT_SECONDS", "7200"))
+LOGS_DBFS_BASE = os.getenv("LOGS_DBFS_BASE", "dbfs:/cluster-logs")  # fallback si el run no trae el destino
 
 if not HOST or not TOKEN:
-    print("❌ Falta DATABRICKS_HOST o DATABRICKS_TOKEN en el entorno.", file=sys.stderr)
-    sys.exit(2)
+    print("❌ Falta DATABRICKS_HOST o DATABRICKS_TOKEN", file=sys.stderr); sys.exit(2)
 
-# Enmascara el token en logs
 print(f"::add-mask::{TOKEN}")
-
 HDRS = {"Authorization": f"Bearer {TOKEN}", "Content-Type": "application/json"}
 
-def api(method: str, path: str, qs: dict | None = None, payload: dict | None = None) -> dict:
+def api(method, path, qs=None, payload=None, raw=False):
     url = HOST + path
-    if qs:
-        url += "?" + urllib.parse.urlencode(qs)
+    if qs: url += "?" + urllib.parse.urlencode(qs)
     data = json.dumps(payload).encode() if payload is not None else None
     req = urllib.request.Request(url, data=data, headers=HDRS, method=method)
-    try:
-        with urllib.request.urlopen(req) as r:
-            b = r.read().decode()
-            return json.loads(b) if b else {}
-    except urllib.error.HTTPError as e:
-        body = e.read().decode(errors="replace")
-        print(f"HTTP {e.code} {e.reason} @ {url}\n{body}", file=sys.stderr)
-        raise
+    with urllib.request.urlopen(req) as r:
+        b = r.read()
+        return b if raw else (json.loads(b.decode()) if b else {})
 
-def load_job_ids() -> dict:
-    if not os.path.isfile(JOB_IDS_PATH):
-        print(f"❌ No existe '{JOB_IDS_PATH}'. Ejecuta primero el UPSERT.", file=sys.stderr)
-        sys.exit(2)
-    with open(JOB_IDS_PATH, "r", encoding="utf-8") as f:
-        return json.load(f)
+# --- DBFS read con offset (máx 1MB por lectura)
+def dbfs_read(path, offset, length=1024*1024):
+    resp = api("GET", "/api/2.0/dbfs/read", qs={"path": path, "offset": offset, "length": length})
+    data_b64 = resp.get("data", "")
+    return base64.b64decode(data_b64) if data_b64 else b""
 
-def run_and_wait(name: str, job_id: int) -> tuple[bool, str]:
-    start = time.time()
-    res = api("POST", "/api/2.1/jobs/run-now", payload={"job_id": job_id})
-    run_id = res["run_id"]
-    print(f"▶ Ejecutando '{name}' (job_id={job_id}, run_id={run_id})")
+def get_run(run_id):
+    return api("GET", "/api/2.1/jobs/runs/get", qs={"run_id": run_id})
 
+def get_output(run_id):
+    return api("GET", "/api/2.1/jobs/runs/get-output", qs={"run_id": run_id})
+
+def run_now(job_id):
+    res = api("POST", "/api/2.1/jobs/run-now", payload={"job_id": int(job_id)})
+    return res["run_id"]
+
+def guess_logs_base_from_run(info):
+    # Intenta sacar el destino real desde el run (si expone el cluster_spec)
+    new_cluster = (info.get("cluster_spec") or {}).get("new_cluster") or {}
+    clc = new_cluster.get("cluster_log_conf") or {}
+    # distintos formatos según plataforma
+    for k in ("dbfs", "s3", "volumes"):
+        if k in clc:
+            dest = clc[k].get("destination") or clc[k].get("path")
+            if dest: return dest
+    return LOGS_DBFS_BASE
+
+def tail_driver_logs(cluster_id, logs_base, stop_when=None):
+    """Lee stdout/stderr con offsets sobre DBFS."""
+    paths = {
+        "stdout": f"{logs_base.rstrip('/')}/{cluster_id}/driver/stdout",
+        "stderr": f"{logs_base.rstrip('/')}/{cluster_id}/driver/stderr"
+    }
+    offsets = {k: 0 for k in paths}
+
+    last_print = 0
     while True:
-        if time.time() - start > TIMEOUT_SECONDS:
-            print(f"⏰ TIMEOUT ({TIMEOUT_SECONDS}s) para '{name}'", file=sys.stderr)
-            return False, "(timeout)"
-        time.sleep(POLL_SECONDS)
-
-        info = api("GET", "/api/2.1/jobs/runs/get", qs={"run_id": run_id})
-        life = info["state"]["life_cycle_state"]
-        result = info["state"].get("result_state")
-        url = info.get("run_page_url", "")
-        print(f"  estado={life}, resultado={result}")
-
-        if life == "TERMINATED":
-            if result == "SUCCESS":
-                print(f"✅ '{name}' OK → {url}")
-                return True, url
-            else:
+        now = time.time()
+        if stop_when and stop_when():  # condición de parada (lifecycle TERMINATED)
+            # una última pasada para no perder cola
+            for name, p in paths.items():
                 try:
-                    out = api("GET", "/api/2.1/jobs/runs/get-output", qs={"run_id": run_id})
-                    preview = json.dumps(out, ensure_ascii=False, indent=2)
-                    print(preview[:2000])
-                except Exception as e:
-                    print(f"(No se pudo obtener get-output: {e})", file=sys.stderr)
-                print(f"❌ '{name}' falló ({result}) → {url}", file=sys.stderr)
-                return False, url
+                    chunk = dbfs_read(p, offsets[name])
+                    if chunk:
+                        sys.stdout.write(chunk.decode(errors="replace"))
+                        offsets[name] += len(chunk)
+                except urllib.error.HTTPError:
+                    pass
+            break
 
+        # throttear
+        if now - last_print < TAIL_INTERVAL:
+            time.sleep(1)
+            continue
+
+        for name, p in paths.items():
+            try:
+                chunk = dbfs_read(p, offsets[name])
+                if chunk:
+                    sys.stdout.write(chunk.decode(errors="replace"))
+                    offsets[name] += len(chunk)
+            except urllib.error.HTTPError:
+                # el archivo puede no existir aún
+                pass
+        sys.stdout.flush()
+        last_print = now
 
 def main():
-    job_ids = load_job_ids()
-    if not job_ids:
-        print("ℹ️ No hay jobs en el mapping; nada que ejecutar.")
-        return
+    # 1) Determinar lista de jobs a ejecutar
+    jobs = []
+    if JOB_ID:
+        jobs = [("JOB", int(JOB_ID))]
+    else:
+        if not os.path.isfile(JOB_IDS_PATH):
+            print(f"❌ No existe {JOB_IDS_PATH}.", file=sys.stderr); sys.exit(2)
+        mapping = json.load(open(JOB_IDS_PATH, "r", encoding="utf-8"))
+        jobs = list(mapping.items())  # [(name, job_id), ...]
 
-    summary_lines = []
-    failures = 0
+    for name, jid in jobs:
+        print(f"▶ Ejecutando '{name}' (job_id={jid})")
+        run_id = run_now(jid)
+        start = time.time()
+        cluster_id = None
+        life = "PENDING"
+        result = None
 
-    for name, jid in job_ids.items():
-        ok, url = run_and_wait(name, jid)
-        bullet = f"- {'✅' if ok else '❌'} **{name}**"
-        if url:
-            bullet += f": [Run]({url})"
-        summary_lines.append(bullet)
-        if not ok:
-            failures += 1
-            if not CONTINUE_ON_FAILURE:
-                break
+        def terminated():
+            nonlocal life
+            return life == "TERMINATED"
 
-    # Publica resumen en Step Summary
-    step_summary = os.getenv("GITHUB_STEP_SUMMARY")
-    if step_summary:
-        with open(step_summary, "a", encoding="utf-8") as f:
-            f.write("## Databricks runs\n")
-            for line in summary_lines:
-                f.write(line + "\n")
+        logs_base = None
+        # 2) Bucle: poll estado + tail de logs
+        while True:
+            if time.time() - start > TIMEOUT_SECONDS:
+                print(f"⏰ TIMEOUT {TIMEOUT_SECONDS}s en '{name}'", file=sys.stderr)
+                sys.exit(1)
 
-    if failures:
-        sys.exit(1)
+            info = get_run(run_id)
+            state = info.get("state", {})
+            life = state.get("life_cycle_state")
+            result = state.get("result_state")
+            url = info.get("run_page_url", "")
+            if not cluster_id:
+                ci = info.get("cluster_instance") or {}
+                cluster_id = ci.get("cluster_id")
+                if cluster_id and not logs_base:
+                    logs_base = guess_logs_base_from_run(info)
+                    print(f"🪵 Tailing driver logs desde {logs_base}/{cluster_id}/driver/ (cada {TAIL_INTERVAL}s aprox.)")
+
+            print(f"  estado={life}, resultado={result}")
+            sys.stdout.flush()
+
+            # mientras RUNNING: intenta tail
+            if cluster_id and logs_base and life in ("PENDING","RUNNING","BLOCKED","QUEUED","TERMINATING"):
+                # hace tail hasta el próximo poll (TAIL_INTERVAL controla el ritmo)
+                t_end = time.time() + POLL_SECONDS
+                while time.time() < t_end and not terminated():
+                    tail_driver_logs(cluster_id, logs_base, stop_when=lambda: terminated())
+                    time.sleep(1)
+
+            if life == "TERMINATED":
+                if result == "SUCCESS":
+                    print(f"✅ '{name}' OK → {url}")
+                    # último tail para vaciar cola
+                    if cluster_id and logs_base:
+                        tail_driver_logs(cluster_id, logs_base, stop_when=lambda: True)
+                    break
+                else:
+                    # intenta sacar mensaje de error final
+                    try:
+                        out = get_output(run_id)
+                        print(json.dumps(out, ensure_ascii=False, indent=2)[:2000])
+                    except Exception as e:
+                        print(f"(No se pudo get-output: {e})", file=sys.stderr)
+                    print(f"❌ '{name}' falló ({result}) → {url}", file=sys.stderr)
+                    sys.exit(1)
+
+            time.sleep(POLL_SECONDS)
 
 if __name__ == "__main__":
     main()
