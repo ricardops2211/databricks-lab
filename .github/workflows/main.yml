@@ -70,6 +70,18 @@ jobs:
           databricks workspace mkdirs /Shared/notebook/py
           databricks workspace mkdirs /Shared/notebook/sql
 
+      # 🔹 Paso 3: Importar notebooks en /Shared/notebook/py
+      - name: Importar notebooks en Databricks
+        shell: bash
+        env:
+          PATH: ${{ env.PATH }}:~/databricks-env/bin
+        run: |
+          source ~/databricks-env/bin/activate
+
+          # Crear carpetas destino en Databricks Workspace
+          databricks workspace mkdirs /Shared/notebook/py
+          databricks workspace mkdirs /Shared/notebook/sql
+
           # Importar notebooks Python si existen
           if ls notebooks/py/*.py 1> /dev/null 2>&1; then
             for notebook in notebooks/py/*.py; do
@@ -93,6 +105,8 @@ jobs:
           else
             echo "⚠️ No se encontraron notebooks SQL en notebooks/sql/"
           fi
+
+
 
 
       # 🔹 Paso 4: Subir archivos de data y configuración a DBFS
