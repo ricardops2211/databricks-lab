@@ -12,7 +12,7 @@ DATABRICKS_TOKEN = os.getenv("DATABRICKS_TOKEN")
 print(f"Usando token DATABRICKS_TOKEN: {'*'*8}...")
 
 if not DATABRICKS_HOST or not DATABRICKS_TOKEN:
-    print("❌ Faltan variables de entorno DATABRICKS_HOST o DATABRICKS_TOKEN")
+    print("Faltan variables de entorno DATABRICKS_HOST o DATABRICKS_TOKEN")
     sys.exit(1)
 
 # Función para ejecutar comandos shell y obtener output
