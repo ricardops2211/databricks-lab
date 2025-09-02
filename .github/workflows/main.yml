@@ -139,7 +139,7 @@ jobs:
         shell: bash
         env:
           DATABRICKS_TOKEN: ${{ steps.get-creds.outputs.DATABRICKS_TOKEN }}
-          DATABRICKS_HOST: ${{ env.DATABRICKS_HOST }}
+          DATABRICKS_HOST: "https://adb-2011990214744919.19.azuredatabricks.net"
           JOBS_DIR: jobs
           JOB_IDS_PATH: .gha/job_ids.json
         run: |
@@ -151,7 +151,7 @@ jobs:
         shell: bash
         env:
           DATABRICKS_TOKEN: ${{ steps.get-creds.outputs.DATABRICKS_TOKEN }}
-          DATABRICKS_HOST: ${{ env.DATABRICKS_HOST }}
+          DATABRICKS_HOST: "https://adb-2011990214744919.19.azuredatabricks.net"
           JOB_IDS_PATH: .gha/job_ids.json
           POLL_SECONDS: "15"
           TIMEOUT_SECONDS: "3600"
