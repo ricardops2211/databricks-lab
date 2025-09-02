@@ -144,6 +144,11 @@ jobs:
           set -Eeuo pipefail
           python3 scripts/create-jobdatabricks.py
 
+      # 🔹 Ejecutar Joblist.tmp
+      - name: Actualizacion de joblist.tmp
+        run: python3 scripts/joblisttmp.py
+
+
       # 🔹 8) Ejecutar Job(s) y monitorear (script Python)
       - name: Ejecutar Job(s) y verificar
         shell: bash
