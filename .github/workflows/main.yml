@@ -1,4 +1,4 @@
-name: Databricks-Job
+name: Databricks-Jobs
 
 on:
   push:
