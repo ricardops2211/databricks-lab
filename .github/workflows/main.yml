@@ -134,68 +134,32 @@ jobs:
             exit 1
           fi
 
-      # 🔹 Paso 5: Crear Job Workflow en Databricks
-      - name: Crear Job Workflow en Databricks
+      # 🔹 7) UPSERT de Jobs (script Python)
+      - name: Crear/Actualizar Job(s) en Databricks (UPSERT)
         shell: bash
         env:
-          DATABRICKS_HOST: "https://adb-2011990214744919.19.azuredatabricks.net"
           DATABRICKS_TOKEN: ${{ steps.get-creds.outputs.DATABRICKS_TOKEN }}
-          PATH: ${{ env.PATH }}:~/databricks-env/bin
+          DATABRICKS_HOST: ${{ env.DATABRICKS_HOST }}
+          JOBS_DIR: jobs
+          JOB_IDS_PATH: .gha/job_ids.json
         run: |
-          source ~/databricks-env/bin/activate
+          set -Eeuo pipefail
+          python scripts/create-jobdatabricks.py
 
-          for job_file in jobs/*.json; do
-            echo "🚀 Creando job workflow desde $job_file..."
-            databricks jobs create --version=2.1 --json "$( < "$job_file" )"
-          done
-
-      - name: Ejecutar Job Workflow y verificar
+      # 🔹 8) Ejecutar Job(s) y monitorear (script Python)
+      - name: Ejecutar Job(s) y verificar
         shell: bash
         env:
-          DATABRICKS_HOST: "https://adb-2011990214744919.19.azuredatabricks.net"
           DATABRICKS_TOKEN: ${{ steps.get-creds.outputs.DATABRICKS_TOKEN }}
-          PATH: ${{ env.PATH }}:~/databricks-env/bin
+          DATABRICKS_HOST: ${{ env.DATABRICKS_HOST }}
+          JOB_IDS_PATH: .gha/job_ids.json
+          POLL_SECONDS: "15"
+          TIMEOUT_SECONDS: "3600"
+          CONTINUE_ON_FAILURE: "false"   # o "true" si quieres seguir aunque falle uno
         run: |
-          source ~/databricks-env/bin/activate
+          set -Eeuo pipefail
+          python scripts/execute-jobdatabricks.py
 
-          # Función portable para sleep
-          wait_seconds() {
-            python3 -c "import time; time.sleep($1)"
-          }
-
-          for job_file in jobs/*.json; do
-            JOB_NAME=$(python3 -c "import json;print(json.load(open('$job_file'))['name'])")
-            echo "Ejecutando job workflow $JOB_NAME..."
-
-            JOB_JSON=$(databricks jobs create --json "$( < "$job_file" )")
-            JOB_ID=$(python3 -c "import sys,json;print(json.load(sys.stdin)['job_id'])" <<< "$JOB_JSON")
-
-            RUN_JSON=$(databricks jobs run-now --job-id "$JOB_ID")
-            RUN_ID=$(python3 -c "import sys,json;print(json.load(sys.stdin)['run_id'])" <<< "$RUN_JSON")
-
-            echo "Esperando a que termine el job..."
-            while true; do
-              RUN_INFO=$(databricks runs get --run-id "$RUN_ID")
-              STATE=$(python3 -c "import sys,json;print(json.load(sys.stdin)['state']['life_cycle_state'])" <<< "$RUN_INFO")
-              RESULT=$(python3 -c "import sys,json;print(json.load(sys.stdin)['state'].get('result_state'))" <<< "$RUN_INFO")
-
-              echo "Estado: $STATE, Resultado: $RESULT"
-
-              if [[ "$STATE" == "TERMINATED" ]]; then
-                if [[ "$RESULT" == "SUCCESS" ]]; then
-                  echo "✅ Job $JOB_NAME terminado correctamente"
-                  break
-                else
-                  echo "❌ Job $JOB_NAME falló con resultado: $RESULT"
-                  databricks runs get-output --run-id "$RUN_ID" | python3 -m json.tool
-                  exit 1
-                fi
-              fi
-
-              # Reemplazo de sleep
-              wait_seconds 15
-            done
-          done
 
 
       # 🔹 Paso 7: Descargar outputs desde DBFS
