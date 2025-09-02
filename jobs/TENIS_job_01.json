@@ -1,18 +1,41 @@
 {
-  "name": "RUN_JOB_WORKFLOW-COACHING",
-  "tasks": [
+  "jobs": [
     {
-      "task_key": "etl_task",
-      "notebook_task": {
-        "notebook_path": "/Shared/notebook/py/archivopython.py",
-        "base_parameters": {
-          "input_path": "dbfs:/FileStore/data/",
-          "output_path": "dbfs:/FileStore/jobs_output/"
+      "name": "ETL_SQL_JOB",
+      "tasks": [
+        {
+          "task_key": "sql_etl_task",
+          "notebook_task": {
+            "notebook_path": "/Shared/notebook/sql/etl_sql_report.sql",
+            "base_parameters": {
+              "input_path": "dbfs:/FileStore/jobs_data/raw/"
+            }
+          },
+          "existing_cluster_id": "0901-081841-j37otbqa",
+          "timeout_seconds": 1800
         }
-      },
-      "existing_cluster_id": "0901-081841-j37otbqa",
-      "timeout_seconds": 3600
+      ],
+      "max_concurrent_runs": 1,
+      "format": "SINGLE_TASK"
+    },
+    {
+      "name": "ETL_PY_JOB",
+      "tasks": [
+        {
+          "task_key": "py_etl_task",
+          "notebook_task": {
+            "notebook_path": "/Shared/notebook/py/etl_process.py",
+            "base_parameters": {
+              "input_path": "dbfs:/FileStore/jobs_data/raw/",
+              "output_table": "analytics.ventas_clientes_py"
+            }
+          },
+          "existing_cluster_id": "0901-081841-j37otbqa",
+          "timeout_seconds": 1800
+        }
+      ],
+      "max_concurrent_runs": 1,
+      "format": "SINGLE_TASK"
     }
-  ],
-  "max_concurrent_runs": 1
+  ]
 }

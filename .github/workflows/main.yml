@@ -66,14 +66,34 @@ jobs:
         run: |
           source ~/databricks-env/bin/activate
 
+          # Crear carpetas destino en Databricks Workspace
           databricks workspace mkdirs /Shared/notebook/py
+          databricks workspace mkdirs /Shared/notebook/sql
 
-          for notebook in notebooks/*.py; do
-            NOTEBOOK_NAME="${notebook##*/}"
-            echo "Importando $NOTEBOOK_NAME en /Shared/notebook/py..."
-            databricks workspace import "$notebook" "/Shared/notebook/py/$NOTEBOOK_NAME" \
-              --language PYTHON --overwrite
-          done
+          # Importar notebooks Python si existen
+          if ls notebooks/py/*.py 1> /dev/null 2>&1; then
+            for notebook in notebooks/py/*.py; do
+              NOTEBOOK_NAME="${notebook##*/}"
+              echo "📥 Importando Python $NOTEBOOK_NAME en /Shared/notebook/py..."
+              databricks workspace import "$notebook" "/Shared/notebook/py/$NOTEBOOK_NAME" \
+                --language PYTHON --overwrite
+            done
+          else
+            echo "⚠️ No se encontraron notebooks Python en notebooks/py/"
+          fi
+
+          # Importar notebooks SQL si existen
+          if ls notebooks/sql/*.sql 1> /dev/null 2>&1; then
+            for notebook in notebooks/sql/*.sql; do
+              NOTEBOOK_NAME="${notebook##*/}"
+              echo "📥 Importando SQL $NOTEBOOK_NAME en /Shared/notebook/sql..."
+              databricks workspace import "$notebook" "/Shared/notebook/sql/$NOTEBOOK_NAME" \
+                --language SQL --overwrite
+            done
+          else
+            echo "⚠️ No se encontraron notebooks SQL en notebooks/sql/"
+          fi
+
 
       # 🔹 Paso 4: Subir archivos de data y configuración a DBFS
       - name: Subir archivos de data y config a DBFS

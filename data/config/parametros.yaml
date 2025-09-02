@@ -1,2 +1,7 @@
-umbral_monto: 50
-reporte_nombre: "reporte_ventas.csv"
+sql_job:
+  umbral_monto: 50
+  reporte_nombre: "reporte_sql.csv"
+
+py_job:
+  umbral_monto: 100
+  reporte_nombre: "reporte_py.csv"

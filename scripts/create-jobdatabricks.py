@@ -1,10 +1,10 @@
 #!/usr/bin/env python3
 # scripts/databricks_upsert_jobs.py
-import os, sys, json, glob, urllib.request, urllib.error, urllib.parse
+import os, sys, json, urllib.request, urllib.error, urllib.parse
 
 HOST = (os.getenv("DATABRICKS_HOST") or "").rstrip("/")
 TOKEN = os.getenv("DATABRICKS_TOKEN") or ""
-JOBS_DIR = os.getenv("JOBS_DIR", "jobs")
+JOBS_FILE = os.getenv("JOBS_FILE", "jobs/jobs.json")
 JOB_IDS_PATH = os.getenv("JOB_IDS_PATH", ".gha/job_ids.json")
 
 if not HOST or not TOKEN:
@@ -35,7 +35,8 @@ def list_jobs_all() -> list[dict]:
     jobs, page_token = [], None
     while True:
         qs = {"limit": 100}
-        if page_token: qs["page_token"] = page_token
+        if page_token:
+            qs["page_token"] = page_token
         resp = api("GET", "/api/2.1/jobs/list", qs)
         jobs.extend(resp.get("jobs", []))
         page_token = resp.get("next_page_token")
@@ -44,11 +45,19 @@ def list_jobs_all() -> list[dict]:
     return jobs
 
 def main():
-    if not os.path.isdir(JOBS_DIR):
-        print(f"ℹ️ Carpeta '{JOBS_DIR}' no existe; nada que upsertear.")
+    if not os.path.isfile(JOBS_FILE):
+        print(f"ℹ️ Archivo '{JOBS_FILE}' no existe; nada que upsertear.")
         os.makedirs(os.path.dirname(JOB_IDS_PATH) or ".", exist_ok=True)
         with open(JOB_IDS_PATH, "w", encoding="utf-8") as f:
             json.dump({}, f)
+        return
+
+    with open(JOBS_FILE, "r", encoding="utf-8-sig") as f:
+        data = json.load(f)
+
+    jobs_specs = data.get("jobs", [])
+    if not jobs_specs:
+        print(f"⚠️ '{JOBS_FILE}' no contiene sección 'jobs'.", file=sys.stderr)
         return
 
     # Índice de jobs existentes por nombre
@@ -58,16 +67,13 @@ def main():
     job_ids = {}
     changed = []
 
-    for fp in sorted(glob.glob(os.path.join(JOBS_DIR, "*.json"))):
-        with open(fp, "r", encoding="utf-8-sig") as f:
-            spec = json.load(f)
+    for spec in jobs_specs:
         name = spec.get("name")
         if not name:
-            print(f"⚠️ '{fp}' no tiene campo 'name'; se omite.", file=sys.stderr)
+            print("⚠️ Job sin 'name'; se omite.", file=sys.stderr)
             continue
 
         if name in existing:
-            # reset (update in place)
             payload = {"job_id": existing[name], "new_settings": spec}
             api("POST", "/api/2.1/jobs/reset", payload=payload)
             job_ids[name] = existing[name]

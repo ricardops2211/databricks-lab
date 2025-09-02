@@ -1,6 +1,6 @@
 [
-  {"cliente_id": 1, "producto": "Zapatillas", "monto": 120.5},
-  {"cliente_id": 2, "producto": "Camiseta", "monto": 45.0},
-  {"cliente_id": 3, "producto": "Pelota", "monto": 30.0},
-  {"cliente_id": 1, "producto": "Shorts", "monto": 25.5}
+  { "id_cliente": 1, "producto": "Raqueta", "monto": 120 },
+  { "id_cliente": 2, "producto": "Pelotas", "monto": 30 },
+  { "id_cliente": 3, "producto": "Zapatillas", "monto": 200 },
+  { "id_cliente": 4, "producto": "Polo", "monto": 45 }
 ]
