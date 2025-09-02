@@ -6,7 +6,7 @@ on:
       - main
 
 jobs:
-  login_databricks_hvault:
+  databricks-ejecucion:
     runs-on: self-hosted
 
     steps:
