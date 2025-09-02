@@ -48,7 +48,10 @@ jobs:
       # 🔹 3) Sanity check de conexión
       - name: Validar conexión a Databricks
         shell: bash
+        env:
+          PATH: ${{ env.PATH }}:~/databricks-env/bin
         run: |
+          source ~/databricks-env/bin/activate
           set -Eeuo pipefail
           databricks --version
           # Lista raíz del workspace para verificar credenciales
