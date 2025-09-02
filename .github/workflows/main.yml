@@ -144,7 +144,7 @@ jobs:
           JOB_IDS_PATH: .gha/job_ids.json
         run: |
           set -Eeuo pipefail
-          python scripts/create-jobdatabricks.py
+          python3 scripts/create-jobdatabricks.py
 
       # 🔹 8) Ejecutar Job(s) y monitorear (script Python)
       - name: Ejecutar Job(s) y verificar
@@ -158,7 +158,7 @@ jobs:
           CONTINUE_ON_FAILURE: "false"   # o "true" si quieres seguir aunque falle uno
         run: |
           set -Eeuo pipefail
-          python scripts/execute-jobdatabricks.py
+          python3 scripts/execute-jobdatabricks.py
 
 
 
