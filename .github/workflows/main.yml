@@ -3,7 +3,7 @@ name: Databricks-Job
 on:
   push:
     branches:
-      - main
+      - deployment
 
 jobs:
   databricks-ejecucion:
