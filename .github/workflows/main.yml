@@ -23,6 +23,7 @@ jobs:
     secrets:
       DATABRICKS_TOKEN: ${{ needs.credentials.outputs.DATABRICKS_TOKEN }}
 
+
   deploy:
     needs: [credentials, verify]
     uses: ricardops2211/ci-cd-reusables/.github/workflows/deploy_databricks.yml@databricks
