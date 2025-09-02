@@ -146,6 +146,10 @@ jobs:
 
       # 🔹 Ejecutar Joblist.tmp
       - name: Actualizacion de joblist.tmp
+        env:
+          WRITE_MAPPING: "false"        # ⬅️ importante
+          WRITE_FULL_MAPPING: "true"    # opcional: deja .gha/job_ids.full.json solo para auditar
+          FILTER_REPO_ONLY: "true"      # opcional: preview con solo jobs definidos en jobs/*.jsonSS
         run: python3 scripts/joblisttmp.py
 
 
