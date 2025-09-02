@@ -51,7 +51,8 @@ def run_and_wait(name: str, job_id: int) -> tuple[bool, str]:
             print(f"⏰ TIMEOUT ({TIMEOUT_SECONDS}s) para '{name}'", file=sys.stderr)
             return False, "(timeout)"
         time.sleep(POLL_SECONDS)
-        info = api("GET", "/api/2.1/runs/get", qs={"run_id": run_id})
+
+        info = api("GET", "/api/2.1/jobs/runs/get", qs={"run_id": run_id})
         life = info["state"]["life_cycle_state"]
         result = info["state"].get("result_state")
         url = info.get("run_page_url", "")
@@ -63,13 +64,14 @@ def run_and_wait(name: str, job_id: int) -> tuple[bool, str]:
                 return True, url
             else:
                 try:
-                    out = api("GET", "/api/2.1/runs/get-output", qs={"run_id": run_id})
+                    out = api("GET", "/api/2.1/jobs/runs/get-output", qs={"run_id": run_id})
                     preview = json.dumps(out, ensure_ascii=False, indent=2)
-                    print(preview[:2000])  # limita el volcado
+                    print(preview[:2000])
                 except Exception as e:
                     print(f"(No se pudo obtener get-output: {e})", file=sys.stderr)
                 print(f"❌ '{name}' falló ({result}) → {url}", file=sys.stderr)
                 return False, url
+
 
 def main():
     job_ids = load_job_ids()
