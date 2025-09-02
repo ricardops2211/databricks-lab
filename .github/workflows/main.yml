@@ -10,14 +10,12 @@ jobs:
     runs-on: self-hosted
     env:
       DATABRICKS_HOST: "https://adb-2011990214744919.19.azuredatabricks.net"
-      DATABRICKS_TOKEN: ${{ steps.get-creds.outputs.DATABRICKS_TOKEN }}
 
     steps:
       # 🔹 Paso 0: Checkout del repo
       - name: Checkout
         uses: actions/checkout@v4
 
-      # 🔹 Paso 1: Login en Vault
       - name: Login en Vault
         shell: bash
         env:
@@ -26,11 +24,11 @@ jobs:
           VAULT_SKIP_VERIFY: "true"
           PATH: ${{ env.PATH }}:/home/gha-runner/vault
         run: |
+          set -Eeuo pipefail
           vault --version
-          vault login $VAULT_TOKEN
+          vault login "$VAULT_TOKEN" >/dev/null
           vault token lookup
 
-      # 🔹 Paso 2: Obtener token de Databricks desde Vault
       - name: Obtener token de Databricks
         id: get-creds
         shell: bash
@@ -39,8 +37,13 @@ jobs:
           VAULT_SKIP_VERIFY: "true"
           PATH: ${{ env.PATH }}:/home/gha-runner/vault
         run: |
+          set -Eeuo pipefail
           dbToken=$(vault kv get -field=DATABRICKS_TOKEN secret/azure)
-          echo "DATABRICKS_TOKEN=$dbToken" >> $GITHUB_OUTPUT
+          echo "::add-mask::$dbToken"
+          # ✔️ exporta a entorno para las siguientes steps
+          echo "DATABRICKS_TOKEN=$dbToken" >> "$GITHUB_ENV"
+          # (Si igual quieres como output, puedes mantener:)
+          echo "DATABRICKS_TOKEN=$dbToken" >> "$GITHUB_OUTPUT"
 
       
       # 🔹 Paso 3: Importar notebooks en /Shared/notebook/py
