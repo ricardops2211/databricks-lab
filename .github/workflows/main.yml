@@ -135,7 +135,7 @@ jobs:
           fi
 
       # 🔹 Paso 5: Crear Job Workflow en Databricks
-      - name: Crear/Editar Job Workflow en Databricks
+      - name: Crear Job Workflow en Databricks
         shell: bash
         env:
           DATABRICKS_HOST: "https://adb-2011990214744919.19.azuredatabricks.net"
@@ -143,8 +143,11 @@ jobs:
           PATH: ${{ env.PATH }}:~/databricks-env/bin
         run: |
           source ~/databricks-env/bin/activate
-          databricks jobs configure --version=2.1
-          python3 codigo/jobsdatabricks.py
+
+          for job_file in jobs/*.json; do
+            echo "🚀 Creando job workflow desde $job_file..."
+            databricks jobs create --version=2.1 --json "$( < "$job_file" )"
+          done
 
       - name: Ejecutar Job Workflow y verificar
         shell: bash
