@@ -22,11 +22,14 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Verificar output de credentials
-      - run: |
+        run: |
           echo "len=${{ needs.credentials.outputs.databricks_token_len }}"
-          test -n "${{ needs.credentials.outputs.databricks_token }}" || { echo "VACÍO"; exit 1; }
+          if [ -z "${{ needs.credentials.outputs.databricks_token }}" ]; then
+            echo "VACÍO"; exit 1;
+          fi
           echo "::add-mask::${{ needs.credentials.outputs.databricks_token }}"
           echo "OK: credentials entregó token"
+
 
   verify:
     needs: [credentials, debug-creds]
