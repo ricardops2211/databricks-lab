@@ -23,6 +23,7 @@ jobs:
       databricks_host: "https://adb-2011990214744919.19.azuredatabricks.net"
       databricks_token: ${{ needs.credentials.outputs.DATABRICKS_TOKEN }}   # <-- AQUÍ
 
+
   deploy:
     needs: [credentials, verify]
     uses: ricardops2211/ci-cd-reusables/.github/workflows/deploy_databricks.yml@databricks
