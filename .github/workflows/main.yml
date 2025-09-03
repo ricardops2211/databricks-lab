@@ -16,12 +16,22 @@ jobs:
     secrets:
       VAULT_TOKEN: ${{ secrets.VAULT_TOKEN }}
 
+  debug-creds:
+    needs: credentials
+    runs-on: ubuntu-latest
+    steps:
+      - run: |
+          test -n "${{ needs.credentials.outputs.DATABRICKS_TOKEN }}" || { echo "VACÍO"; exit 1; }
+          echo "::add-mask::${{ needs.credentials.outputs.DATABRICKS_TOKEN }}"
+          echo "OK: output DATABRICKS_TOKEN presente"
+
+
   verify:
     needs: credentials
     uses: ricardops2211/ci-cd-reusables/.github/workflows/verify_databricks.yml@databricks
     with:
       databricks_host: "https://adb-2011990214744919.19.azuredatabricks.net"
-      databricks_token: ${{ needs.credentials.outputs.DATABRICKS_TOKEN }}   # <-- AQUÍ
+      databricks_token: ${{ needs.credentials.outputs.DATABRICKS_TOKEN }}
 
 
   deploy:
