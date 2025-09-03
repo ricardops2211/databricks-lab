@@ -16,32 +16,22 @@ jobs:
     secrets:
       VAULT_TOKEN: ${{ secrets.VAULT_TOKEN }}
 
-  # (Opcional) Debug NO bloqueante del output
-  debug-creds:
-    needs: credentials
-    runs-on: ubuntu-latest
-    steps:
-      - name: Verificar output de credentials (no bloqueante)
-        run: |
-          echo "len=${{ needs.credentials.outputs.databricks_token_len }}"
-          if [ -z "${{ needs.credentials.outputs.databricks_token }}" ]; then
-            echo "⚠️ OJO: output databricks_token llegó vacío (sanitización entre repos)."; exit 0;
-          fi
-          echo "::add-mask::${{ needs.credentials.outputs.databricks_token }}"
-          echo "OK: credentials entregó token"
-
   verify:
-    needs: [credentials, debug-creds]
+    needs: credentials
     uses: ricardops2211/ci-cd-reusables/.github/workflows/verify_databricks.yml@databricks
     with:
       databricks_host: "https://adb-2011990214744919.19.azuredatabricks.net"
-      databricks_token: ${{ needs.credentials.outputs.databricks_token }}
+      # (no pases databricks_token aquí: ese input NO existe en el reusable)
+    secrets:
+      VAULT_TOKEN: ${{ secrets.VAULT_TOKEN }}   # <- requerido por el reusable
 
   deploy:
     needs: [credentials, verify]
     uses: ricardops2211/ci-cd-reusables/.github/workflows/deploy_databricks.yml@databricks
     with:
       databricks_host: "https://adb-2011990214744919.19.azuredatabricks.net"
-      databricks_token: ${{ needs.credentials.outputs.databricks_token }}
       logs_dbfs_base: "dbfs:/cluster-logs"
       job_ids_path: ".gha/job_ids.json"
+      # (no pases databricks_token aquí: ese input NO existe en el reusable)
+    secrets:
+      VAULT_TOKEN: ${{ secrets.VAULT_TOKEN }}   # <- requerido por el reusable
