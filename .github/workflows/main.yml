@@ -2,32 +2,43 @@ name: Databricks-Job
 
 on:
   push:
-    branches:
-      - reusable-databricks
+    branches: [ "main" ]
   workflow_dispatch:
 
 jobs:
   credentials:
+    name: Obtener credenciales desde Vault
     uses: ricardops2211/ci-cd-reusables/.github/workflows/credentials_azure.yml@databricks
     with:
       vault_addr: "http://127.0.0.1:8200"
-      secret_path: "secret/azure"
-      field: "DATABRICKS_TOKEN"
+      skip_verify: true
     secrets:
       VAULT_TOKEN: ${{ secrets.VAULT_TOKEN }}
 
-  verify:
-    needs: credentials
-    uses: ricardops2211/ci-cd-reusables/.github/workflows/verify_databricks.yml@databricks
-    with:
-      databricks_host: "https://adb-2011990214744919.19.azuredatabricks.net"
-      databricks_token: ${{ needs.credentials.outputs.databricks_token }}
-
   deploy:
-    needs: [credentials, verify]
+    name: Validar conexión a Databricks
+    needs: [credentials]
     uses: ricardops2211/ci-cd-reusables/.github/workflows/deploy_databricks.yml@databricks
     with:
       databricks_host: "https://adb-2011990214744919.19.azuredatabricks.net"
-      databricks_token: ${{ needs.credentials.outputs.databricks_token }}
-      logs_dbfs_base: "dbfs:/cluster-logs"
-      job_ids_path: ".gha/job_ids.json"
+    secrets:
+      DATABRICKS_TOKEN: ${{ needs.credentials.outputs.databricks_token }}
+
+  verify:
+    name: Importar/ejecutar Jobs y manejar outputs
+    needs: [credentials, deploy]
+    uses: ricardops2211/ci-cd-reusables/.github/workflows/verify_databricks.yml@databricks
+    with:
+      databricks_host: "https://adb-2011990214744919.19.azuredatabricks.net"
+      notebooks_dir: "notebooks"
+      data_dir: "data"
+      raw_clientes: "data/raw/clientes.csv"
+      raw_ventas: "data/raw/ventas.json"
+      config_param_file: "data/config/parametros.yaml"
+      jobs_dir: "jobs"
+      python_scripts_dir: "scripts"
+      outputs_dbfs: "dbfs:/FileStore/jobs_output/"
+      artifact_name: "job-outputs"
+      retention_days: 7
+    secrets:
+      DATABRICKS_TOKEN: ${{ needs.credentials.outputs.databricks_token }}
