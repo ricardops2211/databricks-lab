@@ -22,7 +22,8 @@ jobs:
     with:
       databricks_host: "https://adb-2011990214744919.19.azuredatabricks.net"
     secrets:
-      DATABRICKS_TOKEN: ${{ needs.credentials.outputs.databricks_token }}
+      # Pasamos el token DOBLE-BASE64 como "secreto" al reusable
+      DATABRICKS_TOKEN_B64: ${{ needs.credentials.outputs.databricks_token_b64 }}
 
   verify:
     name: Importar/ejecutar Jobs y manejar outputs
@@ -41,4 +42,4 @@ jobs:
       artifact_name: "job-outputs"
       retention_days: 7
     secrets:
-      DATABRICKS_TOKEN: ${{ needs.credentials.outputs.databricks_token }}
+      DATABRICKS_TOKEN_B64: ${{ needs.credentials.outputs.databricks_token_b64 }}
