@@ -16,7 +16,7 @@ jobs:
     secrets:
       VAULT_TOKEN: ${{ secrets.VAULT_TOKEN }}
 
-  # Debug opcional: puedes dejarlo o quitarlo
+  # Debug opcional del output (no falles aquí si solo quieres inspección)
   debug-creds:
     needs: credentials
     runs-on: ubuntu-latest
@@ -25,30 +25,24 @@ jobs:
         run: |
           echo "len=${{ needs.credentials.outputs.databricks_token_len }}"
           if [ -z "${{ needs.credentials.outputs.databricks_token }}" ]; then
-            echo "VACÍO (esto es normal si no lo consumes)"; exit 0;
+            echo "⚠️ OJO: databricks_token llegó vacío (posible sanitización entre repos)."
+            exit 0
           fi
+          echo "::add-mask::${{ needs.credentials.outputs.databricks_token }}"
           echo "OK: credentials entregó token"
 
   verify:
-    needs: [credentials]
+    needs: [credentials]   # o [credentials, debug-creds] si quieres forzar el debug antes
     uses: ricardops2211/ci-cd-reusables/.github/workflows/verify_databricks.yml@databricks
     with:
       databricks_host: "https://adb-2011990214744919.19.azuredatabricks.net"
-      vault_addr: "http://127.0.0.1:8200"   # <-- estos inputs deben existir en el reusable
-      secret_path: "secret/azure"
-      field: "DATABRICKS_TOKEN"
-    secrets:
-      VAULT_TOKEN: ${{ secrets.VAULT_TOKEN }}  # <-- requerido por el reusable
+      databricks_token: ${{ needs.credentials.outputs.databricks_token }}
 
   deploy:
-    needs: [verify]
+    needs: [credentials, verify]
     uses: ricardops2211/ci-cd-reusables/.github/workflows/deploy_databricks.yml@databricks
     with:
       databricks_host: "https://adb-2011990214744919.19.azuredatabricks.net"
-      vault_addr: "http://127.0.0.1:8200"     # <-- igual que arriba
-      secret_path: "secret/azure"
-      field: "DATABRICKS_TOKEN"
+      databricks_token: ${{ needs.credentials.outputs.databricks_token }}
       logs_dbfs_base: "dbfs:/cluster-logs"
       job_ids_path: ".gha/job_ids.json"
-    secrets:
-      VAULT_TOKEN: ${{ secrets.VAULT_TOKEN }}  # <-- requerido por el reusable
