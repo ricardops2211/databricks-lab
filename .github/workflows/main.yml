@@ -2,7 +2,7 @@ name: Databricks-Job
 
 on:
   push:
-    branches: [ "main" ]
+    branches: [ "reusable-databricks" ]
   workflow_dispatch:
 
 jobs:
