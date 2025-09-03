@@ -7,7 +7,17 @@ on:
   workflow_dispatch:
 
 jobs:
+  credentials:
+    uses: ricardops2211/ci-cd-reusables/.github/workflows/credentials_azure.yml@databricks
+    with:
+      vault_addr: "http://127.0.0.1:8200"
+      secret_path: "secret/azure"
+      field: "DATABRICKS_TOKEN"
+    secrets:
+      VAULT_TOKEN: ${{ secrets.VAULT_TOKEN }}
+
   verify:
+    needs: credentials
     uses: ricardops2211/ci-cd-reusables/.github/workflows/verify_databricks.yml@databricks
     with:
       databricks_host: "https://adb-2011990214744919.19.azuredatabricks.net"
@@ -18,7 +28,7 @@ jobs:
       VAULT_TOKEN: ${{ secrets.VAULT_TOKEN }}
 
   deploy:
-    needs: verify
+    needs: [credentials, verify]
     uses: ricardops2211/ci-cd-reusables/.github/workflows/deploy_databricks.yml@databricks
     with:
       databricks_host: "https://adb-2011990214744919.19.azuredatabricks.net"
