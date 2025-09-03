@@ -2,8 +2,7 @@ name: Databricks-Job
 
 on:
   push:
-    branches:
-      - reusable-databricks
+    branches: [ reusable-databricks ]
   workflow_dispatch:
 
 jobs:
@@ -21,21 +20,13 @@ jobs:
     uses: ricardops2211/ci-cd-reusables/.github/workflows/verify_databricks.yml@databricks
     with:
       databricks_host: "https://adb-2011990214744919.19.azuredatabricks.net"
-      vault_addr: "http://127.0.0.1:8200"
-      secret_path: "secret/azure"
-      field: "DATABRICKS_TOKEN"
-    secrets:
-      VAULT_TOKEN: ${{ secrets.VAULT_TOKEN }}
+      databricks_token: ${{ needs.credentials.outputs.databricks_token }}
 
   deploy:
     needs: [credentials, verify]
     uses: ricardops2211/ci-cd-reusables/.github/workflows/deploy_databricks.yml@databricks
     with:
       databricks_host: "https://adb-2011990214744919.19.azuredatabricks.net"
-      vault_addr: "http://127.0.0.1:8200"
-      secret_path: "secret/azure"
-      field: "DATABRICKS_TOKEN"
+      databricks_token: ${{ needs.credentials.outputs.databricks_token }}
       logs_dbfs_base: "dbfs:/cluster-logs"
       job_ids_path: ".gha/job_ids.json"
-    secrets:
-      VAULT_TOKEN: ${{ secrets.VAULT_TOKEN }}
