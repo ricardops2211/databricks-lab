@@ -30,7 +30,6 @@ jobs:
           echo "::add-mask::${{ needs.credentials.outputs.databricks_token }}"
           echo "OK: credentials entregó token"
 
-
   verify:
     needs: [credentials, debug-creds]
     uses: ricardops2211/ci-cd-reusables/.github/workflows/verify_databricks.yml@databricks
