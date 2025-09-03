@@ -7,41 +7,25 @@ on:
   workflow_dispatch:
 
 jobs:
-  credentials:
-    uses: ricardops2211/ci-cd-reusables/.github/workflows/credentials_azure.yml@databricks
+  verify:
+    uses: ricardops2211/ci-cd-reusables/.github/workflows/verify_databricks.yml@databricks
     with:
+      databricks_host: "https://adb-2011990214744919.19.azuredatabricks.net"
       vault_addr: "http://127.0.0.1:8200"
       secret_path: "secret/azure"
       field: "DATABRICKS_TOKEN"
     secrets:
       VAULT_TOKEN: ${{ secrets.VAULT_TOKEN }}
 
-  # Debug para comprobar que el reusable de credenciales devolvió el output
-  debug-creds:
-    needs: credentials
-    runs-on: ubuntu-latest
-    steps:
-      - name: Verificar output de credentials
-        run: |
-          echo "len=${{ needs.credentials.outputs.databricks_token_len }}"
-          if [ -z "${{ needs.credentials.outputs.databricks_token }}" ]; then
-            echo "VACÍO"; exit 1;
-          fi
-          echo "::add-mask::${{ needs.credentials.outputs.databricks_token }}"
-          echo "OK: credentials entregó token"
-
-  verify:
-    needs: [credentials, debug-creds]
-    uses: ricardops2211/ci-cd-reusables/.github/workflows/verify_databricks.yml@databricks
-    with:
-      databricks_host: "https://adb-2011990214744919.19.azuredatabricks.net"
-      databricks_token: ${{ needs.credentials.outputs.databricks_token }}  # <= usa el LOWERCASE
-
   deploy:
-    needs: [credentials, verify]
+    needs: verify
     uses: ricardops2211/ci-cd-reusables/.github/workflows/deploy_databricks.yml@databricks
     with:
       databricks_host: "https://adb-2011990214744919.19.azuredatabricks.net"
-      databricks_token: ${{ needs.credentials.outputs.databricks_token }}  # <= idem
+      vault_addr: "http://127.0.0.1:8200"
+      secret_path: "secret/azure"
+      field: "DATABRICKS_TOKEN"
       logs_dbfs_base: "dbfs:/cluster-logs"
       job_ids_path: ".gha/job_ids.json"
+    secrets:
+      VAULT_TOKEN: ${{ secrets.VAULT_TOKEN }}
