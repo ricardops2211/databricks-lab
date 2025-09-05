@@ -4,7 +4,7 @@
     {
       "task_key": "etl_task",
       "notebook_task": {
-        "notebook_path": "/Shared/notebook/py/tennis_01.py",
+        "notebook_path": "/Shared/notebook/py/kyndryl_lab.py",
         "base_parameters": {
           "input_path": "dbfs:/FileStore/data/",
           "output_path": "dbfs:/FileStore/jobs_output/"
