@@ -1,10 +1,10 @@
 {
-  "name": "RUN_JOB_WORKFLOW-GLANDSLAM-USA",
+  "name": "RUN_JOB_WORKFLOW_GIMNASIO",
   "tasks": [
     {
       "task_key": "etl_task",
       "notebook_task": {
-        "notebook_path": "/Shared/notebook/py/archivopython.py",
+        "notebook_path": "/Shared/notebook/py/tennis_01.py",
         "base_parameters": {
           "input_path": "dbfs:/FileStore/data/",
           "output_path": "dbfs:/FileStore/jobs_output/"
