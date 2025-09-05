@@ -1,5 +1,5 @@
 {
-  "name": "RUN_JOB_WORKFLOW_05_SETIEMBRE_HOYDIA",
+  "name": "RUN_JOB_WORKFLOW_05_SETIEMBRE_HOYDIA_set",
   "tasks": [
     {
       "task_key": "etl_task",
