@@ -3,6 +3,6 @@
     "project": { "key": "KAN" },
     "summary": "Nueva historia creada desde GitHub Actions",
     "description": "Esta historia se creó automáticamente a partir de un archivo JSON.",
-    "issuetype": { "name": "Story" }
+    "issuetype": { "name": "Historia" }
   }
 }
