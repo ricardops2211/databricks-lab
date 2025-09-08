@@ -4,6 +4,11 @@ on:
   push:
     branches:
       - jira-itsm
+    inputs:
+      ticket_file:
+        description: "Archivo JSON con el ticket a crear"
+        required: true
+        default: "tickets/story_001.json"
 
 env:
   JIRA_URL: "https://marketingpachas.atlassian.net"
@@ -52,3 +57,18 @@ jobs:
             -H "Accept: application/json" \
             "$JIRA_URL/rest/api/3/project" \
             | jq '.[] | {key, name, id}' || true
+
+      - name: Crear historia en Jira desde JSON
+        shell: bash
+        env:
+          JIRA_AUTH: ${{ env.JIRA_AUTH }}
+          JIRA_URL: ${{ env.JIRA_URL }}
+        run: |
+          TICKET_FILE="${{ github.event.inputs.ticket_file }}"
+          echo "📂 Usando archivo: $TICKET_FILE"
+          
+          curl -X POST \
+            -H "Authorization: Basic $JIRA_AUTH" \
+            -H "Content-Type: application/json" \
+            --data @"$TICKET_FILE" \
+            "$JIRA_URL/rest/api/3/issue"
