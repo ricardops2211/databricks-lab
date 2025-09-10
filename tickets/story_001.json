@@ -1,8 +1,26 @@
 {
   "fields": {
-    "project": { "key": "KAN" },
-    "summary": "Nueva historia creada desde GitHub Actions",
-    "description": "Esta historia se creó automáticamente a partir de un archivo JSON.",
-    "issuetype": { "name": "Historia" }
+    "project": {
+      "key": "KAN"
+    },
+    "summary": "Creado desde GitHub Actions",
+    "issuetype": {
+      "name": "Historia"
+    },
+    "description": {
+      "type": "doc",
+      "version": 1,
+      "content": [
+        {
+          "type": "paragraph",
+          "content": [
+            {
+              "type": "text",
+              "text": "Creado desde GitHub Actions."
+            }
+          ]
+        }
+      ]
+    }
   }
 }
