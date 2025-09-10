@@ -1,4 +1,4 @@
-name: GHActions - Jira ITSM - Richies
+name: GHActions - Jira ITSM - Richie
 
 on:
   push:
