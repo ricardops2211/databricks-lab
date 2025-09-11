@@ -1,12 +1,12 @@
 {
   "fields": {
-    "project": {
-      "key": "KAN"
-    },
-    "summary": "Creado desde GitHub Actions",
     "issuetype": {
-      "name": "Historia"
+      "name": "Story"
     },
+    "project": {
+      "key": "ONE"
+    },
+    "summary": "Prueba-OCD",
     "description": {
       "type": "doc",
       "version": 1,
@@ -21,6 +21,12 @@
           ]
         }
       ]
-    }
+    },
+    "customfield_10077": "Ben Djokovic",
+    "customfield_10078": "Cristiano Ronaldo",
+    "customfield_10079": "Jude Bellightman",
+    "customfield_10081": "Jaime Garfia",
+    "customfield_10082": "TENIS",
+    "subtasks": []
   }
 }
