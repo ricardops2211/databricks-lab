@@ -1,0 +1,19 @@
+name: Jira Transition
+
+on:
+  repository_dispatch:
+    types: [jira-transition]   # 👈 coincide con lo que mandaste
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout de la rama
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.client_payload.branch_name }}
+
+      - name: Mostrar info de Jira
+        run: |
+          echo "Issue: ${{ github.event.client_payload.issue_key }}"
+          echo "Branch: ${{ github.event.client_payload.branch_name }}"
