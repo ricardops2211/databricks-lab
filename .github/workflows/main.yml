@@ -3,6 +3,14 @@ name: GHActions - Jira ITSM - Richie
 on:
   repository_dispatch:
     types: [jira-transition]
+  workflow_dispatch:
+    inputs:
+      issue_key:
+        description: "Clave del ticket Jira (ej: KAN-3)"
+        required: true
+      branch_name:
+        description: "Rama asociada al ticket (ej: release/KAN-3)"
+        required: true
 
 env:
   JIRA_URL: "https://marketingpachas.atlassian.net"
@@ -13,9 +21,22 @@ jobs:
     runs-on: self-hosted
 
     steps:
-      # 🔹 Paso 0: Checkout del repo
+      - name: Determinar branch e issue
+        id: vars
+        run: |
+          if [ -n "${{ github.event.client_payload.branch_name }}" ]; then
+            echo "branch=${{ github.event.client_payload.branch_name }}" >> $GITHUB_OUTPUT
+            echo "issue=${{ github.event.client_payload.issue_key }}" >> $GITHUB_OUTPUT
+          else
+            echo "branch=${{ github.event.inputs.branch_name }}" >> $GITHUB_OUTPUT
+            echo "issue=${{ github.event.inputs.issue_key }}" >> $GITHUB_OUTPUT
+          fi
+
+      # 🔹 Paso 0: Checkout del repo en la rama del ticket
       - name: Checkout
         uses: actions/checkout@v4
+        with:
+          ref: ${{ steps.vars.outputs.branch }}
 
       - name: Login en Vault
         shell: bash
