@@ -57,8 +57,8 @@ jobs:
           PATH: ${{ env.PATH }}:/home/gha-runner/vault
         run: |
           set -Eeuo pipefail
-          dbToken=$(vault kv get -field=GH_TOKEN secret/github)
-          echo "::add-mask::$dbToken"
+          ghToken=$(vault kv get -field=GH_TOKEN secret/github)
+          echo "::add-mask::$ghToken"
           # ✔️ exporta a entorno para las siguientes steps
           echo "GH_TOKEN=$ghToken" >> "$GITHUB_ENV"
           # (Si igual quieres como output, puedes mantener:)
