@@ -1,9 +1,8 @@
 name: GHActions - Jira ITSM - Richie
 
 on:
-  push:
-    branches:
-      - jira-itsm
+  repository_dispatch:
+    types: [jira-transition]
 
 env:
   JIRA_URL: "https://marketingpachas.atlassian.net"
