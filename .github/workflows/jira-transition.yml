@@ -68,3 +68,23 @@ jobs:
         run: |
           echo "🔑 Issue Key: ${{ steps.vars.outputs.issue }}"
           echo "🌿 Branch:   ${{ steps.vars.outputs.branch }}"
+
+      - name: Lanzar workflow main.yml con cURL
+        shell: bash
+        env:
+          GH_TOKEN: ${{ env.GH_TOKEN }}
+          ISSUE_KEY: ${{ steps.vars.outputs.issue }}
+          BRANCH_NAME: ${{ steps.vars.outputs.branch }}
+        run: |
+          echo "🚀 Disparando workflow main.yml en la rama $BRANCH_NAME para el issue $ISSUE_KEY ..."
+          curl -s -X POST \
+            -H "Authorization: Bearer $GH_TOKEN" \
+            -H "Accept: application/vnd.github+json" \
+            https://api.github.com/repos/ricardops2211/databricks-lab/actions/workflows/main.yml/dispatches \
+            -d "{
+              \"ref\": \"$BRANCH_NAME\",
+              \"inputs\": {
+                \"issue_key\": \"$ISSUE_KEY\",
+                \"branch_name\": \"$BRANCH_NAME\"
+              }
+            }"
