@@ -57,10 +57,15 @@ jobs:
           PATH: ${{ env.PATH }}:/home/gha-runner/vault
         run: |
           set -Eeuo pipefail
-          # Leemos el token y quitamos saltos de línea con bash built-ins
-          ghToken=$(vault kv get -field=GH_TOKEN secret/github | sed 's/[\r\n]//g')
+          # Leemos el token y quitamos saltos de línea con bash interno
+          ghToken=""
+          while IFS= read -r line; do
+            ghToken+="$line"
+          done < <(vault kv get -field=GH_TOKEN secret/github)
+          
           echo "::add-mask::$ghToken"
           echo "GH_TOKEN=$ghToken" >> "$GITHUB_ENV"
+
 
       - name: Mostrar payload recibido
         run: |
