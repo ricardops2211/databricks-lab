@@ -35,6 +35,35 @@ jobs:
         with:
           ref: ${{ steps.vars.outputs.branch }}
 
+      - name: Login en Vault
+        shell: bash
+        env:
+          VAULT_ADDR: http://127.0.0.1:8200
+          VAULT_TOKEN: ${{ secrets.VAULT_TOKEN }}
+          VAULT_SKIP_VERIFY: "true"
+          PATH: ${{ env.PATH }}:/home/gha-runner/vault
+        run: |
+          set -Eeuo pipefail
+          vault --version
+          vault login "$VAULT_TOKEN" >/dev/null
+          vault token lookup
+
+      - name: Obtener token de github
+        id: get-creds
+        shell: bash
+        env:
+          VAULT_ADDR: http://127.0.0.1:8200
+          VAULT_SKIP_VERIFY: "true"
+          PATH: ${{ env.PATH }}:/home/gha-runner/vault
+        run: |
+          set -Eeuo pipefail
+          dbToken=$(vault kv get -field=GH_TOKEN secret/github)
+          echo "::add-mask::$dbToken"
+          # ✔️ exporta a entorno para las siguientes steps
+          echo "GH_TOKEN=$ghToken" >> "$GITHUB_ENV"
+          # (Si igual quieres como output, puedes mantener:)
+          echo "GH_TOKEN=$ghToken" >> "$GITHUB_OUTPUT"
+
       - name: Mostrar payload recibido
         run: |
           echo "🔑 Issue Key: ${{ steps.vars.outputs.issue }}"
