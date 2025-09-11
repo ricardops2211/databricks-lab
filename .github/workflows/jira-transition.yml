@@ -48,7 +48,7 @@ jobs:
           vault login "$VAULT_TOKEN" >/dev/null
           vault token lookup
 
-      - name: Obtener token de GitHub desde Vault (visible)
+      - name: Obtener token de GitHub desde Vault (solo bash)
         id: get-creds
         shell: bash
         env:
@@ -57,15 +57,18 @@ jobs:
           PATH: ${{ env.PATH }}:/home/gha-runner/vault
         run: |
           set -Eeuo pipefail
-          # Leemos el token y eliminamos saltos de línea
-          GH_TOKEN=$(vault kv get -field=GH_TOKEN secret/github | awk '{$1=$1; print}')
       
-          # Guardamos en entorno de workflow
+          # Leer token desde Vault y limpiar saltos de línea / retornos de carro
+          GH_TOKEN=$(vault kv get -field=GH_TOKEN secret/github)
+          GH_TOKEN="${GH_TOKEN//$'\n'/}"   # eliminar saltos de línea
+          GH_TOKEN="${GH_TOKEN//$'\r'/}"   # eliminar retornos de carro
+      
+          # Guardar en entorno de GitHub Actions
           echo "GH_TOKEN=$GH_TOKEN" >> "$GITHUB_ENV"
       
-          # Lo mostramos en la salida del job
+          # Mostrar token visible en logs
           echo "🔑 Token GitHub obtenido: $GH_TOKEN"
-
+      
 
 
       - name: Mostrar payload recibido
