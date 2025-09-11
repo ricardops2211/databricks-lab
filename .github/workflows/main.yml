@@ -5,21 +5,10 @@ on:
     types: [jira-transition]
 
 jobs:
-  build-from-jira:
+  jira:
     runs-on: ubuntu-latest
-
     steps:
-      - name: Checkout branch from Jira
-        uses: actions/checkout@v4
-        with:
-          ref: ${{ github.event.client_payload.branch_name }}
-
-      - name: Debug info
+      - name: Debug payload
         run: |
-          echo "Evento recibido desde Jira"
-          echo "Issue Key: ${{ github.event.client_payload.issue_key }}"
+          echo "Issue: ${{ github.event.client_payload.issue_key }}"
           echo "Branch: ${{ github.event.client_payload.branch_name }}"
-
-      # Aquí pondrías los pasos reales de tu pipeline
-      - name: Run build
-        run: echo "Aquí correría el build/test/deploy en la rama ${{ github.event.client_payload.branch_name }}"
