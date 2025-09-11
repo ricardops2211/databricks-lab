@@ -48,7 +48,7 @@ jobs:
           vault login "$VAULT_TOKEN" >/dev/null
           vault token lookup
 
-      - name: Obtener token de GitHub desde Vault
+      - name: Obtener token de GitHub desde Vault (visible)
         id: get-creds
         shell: bash
         env:
@@ -57,14 +57,15 @@ jobs:
           PATH: ${{ env.PATH }}:/home/gha-runner/vault
         run: |
           set -Eeuo pipefail
-          # Leemos el token y quitamos saltos de línea con bash interno
-          ghToken=""
-          while IFS= read -r line; do
-            ghToken+="$line"
-          done < <(vault kv get -field=GH_TOKEN secret/github)
-          
-          echo "::add-mask::$ghToken"
-          echo "GH_TOKEN=$ghToken" >> "$GITHUB_ENV"
+          # Leemos el token y eliminamos saltos de línea
+          GH_TOKEN=$(vault kv get -field=GH_TOKEN secret/github | tr -d '\r\n')
+      
+          # Guardamos en entorno de workflow
+          echo "GH_TOKEN=$GH_TOKEN" >> "$GITHUB_ENV"
+      
+          # Lo mostramos en la salida del job
+          echo "🔑 Token GitHub obtenido: $GH_TOKEN"
+
 
 
       - name: Mostrar payload recibido
@@ -85,9 +86,10 @@ jobs:
             -H "Accept: application/vnd.github+json" \
             https://api.github.com/repos/ricardops2211/databricks-lab/actions/workflows/main.yml/dispatches \
             -d "{
-              \"ref\": \"$BRANCH_NAME\",
-              \"inputs\": {
-                \"issue_key\": \"$ISSUE_KEY\",
-                \"branch_name\": \"$BRANCH_NAME\"
-              }
-            }"
+                  \"ref\": \"$BRANCH_NAME\",
+                  \"inputs\": {
+                    \"issue_key\": \"$ISSUE_KEY\",
+                    \"branch_name\": \"$BRANCH_NAME\"
+                  }
+                }"
+
