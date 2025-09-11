@@ -57,8 +57,8 @@ jobs:
           PATH: ${{ env.PATH }}:/home/gha-runner/vault
         run: |
           set -Eeuo pipefail
-          # limpiamos saltos de línea para evitar 401
-          ghToken=$(vault kv get -field=GH_TOKEN secret/github | tr -d '\r\n')
+          # Leemos el token y quitamos saltos de línea con bash built-ins
+          ghToken=$(vault kv get -field=GH_TOKEN secret/github | sed 's/[\r\n]//g')
           echo "::add-mask::$ghToken"
           echo "GH_TOKEN=$ghToken" >> "$GITHUB_ENV"
 
