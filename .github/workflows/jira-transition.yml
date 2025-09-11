@@ -58,7 +58,7 @@ jobs:
         run: |
           set -Eeuo pipefail
           # Leemos el token y eliminamos saltos de línea
-          GH_TOKEN=$(vault kv get -field=GH_TOKEN secret/github | tr -d '\r\n')
+          GH_TOKEN=$(vault kv get -field=GH_TOKEN secret/github | awk '{$1=$1; print}')
       
           # Guardamos en entorno de workflow
           echo "GH_TOKEN=$GH_TOKEN" >> "$GITHUB_ENV"
