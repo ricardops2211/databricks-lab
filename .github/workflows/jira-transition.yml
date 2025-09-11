@@ -1,19 +1,35 @@
+# .github/workflows/jira-transition.yml
 name: Jira Transition
 
 on:
   repository_dispatch:
-    types: [jira-transition]   # 👈 coincide con lo que mandaste
+    types: [jira-transition]
 
 jobs:
-  build:
+  jira-transition-job:
     runs-on: ubuntu-latest
+
     steps:
-      - name: Checkout de la rama
+      # 1. Hacemos checkout de la rama recibida
+      - name: Checkout del branch del ticket
         uses: actions/checkout@v4
         with:
           ref: ${{ github.event.client_payload.branch_name }}
 
-      - name: Mostrar info de Jira
+      # 2. Mostramos info de Jira (útil para debug)
+      - name: Mostrar payload recibido
         run: |
-          echo "Issue: ${{ github.event.client_payload.issue_key }}"
-          echo "Branch: ${{ github.event.client_payload.branch_name }}"
+          echo "🔑 Issue key: ${{ github.event.client_payload.issue_key }}"
+          echo "🌿 Branch: ${{ github.event.client_payload.branch_name }}"
+
+      # 3. Simulación de build/test (aquí va tu lógica real)
+      - name: Build en la rama correspondiente
+        run: |
+          echo "🏗️ Compilando código en ${{ github.event.client_payload.branch_name }}"
+          ls -la
+
+      # 4. Ejemplo: solo si es release/*
+      - name: Deploy (solo ramas release/*)
+        if: startsWith(github.event.client_payload.branch_name, 'release/')
+        run: |
+          echo "🚀 Deploy para la rama ${{ github.event.client_payload.branch_name }}"
