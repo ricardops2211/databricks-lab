@@ -14,7 +14,7 @@ on:
 
 jobs:
   jira-transition-job:
-    runs-on: ubuntu-latest
+    runs-on: self-hosted
     permissions:
       contents: write   # necesario para checkout
 
