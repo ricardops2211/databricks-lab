@@ -3,35 +3,39 @@ name: Jira Transition
 on:
   repository_dispatch:
     types: [jira-transition]
+  workflow_dispatch:
+    inputs:
+      issue_key:
+        description: "Clave del ticket de Jira"
+        required: true
+      branch_name:
+        description: "Rama asociada al ticket"
+        required: true
 
 jobs:
   jira-transition-job:
     runs-on: ubuntu-latest
     permissions:
-      contents: write   # 👈 importante para que el dispatch funcione
+      contents: write   # necesario para checkout
 
     steps:
-      - name: Checkout rama del ticket
+      - name: Determinar branch e issue
+        id: vars
+        run: |
+          if [ -n "${{ github.event.client_payload.branch_name }}" ]; then
+            echo "branch=${{ github.event.client_payload.branch_name }}" >> $GITHUB_OUTPUT
+            echo "issue=${{ github.event.client_payload.issue_key }}" >> $GITHUB_OUTPUT
+          else
+            echo "branch=${{ github.event.inputs.branch_name }}" >> $GITHUB_OUTPUT
+            echo "issue=${{ github.event.inputs.issue_key }}" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Checkout código en la rama del ticket
         uses: actions/checkout@v4
         with:
-          ref: ${{ github.event.client_payload.branch_name }}
+          ref: ${{ steps.vars.outputs.branch }}
 
-      - name: Mostrar payload
+      - name: Mostrar payload recibido
         run: |
-          echo "🔑 Issue Key: ${{ github.event.client_payload.issue_key }}"
-          echo "🌿 Branch:   ${{ github.event.client_payload.branch_name }}"
-
-      # 🔹 Aquí el curl manual dentro del workflow
-      - name: Re-dispatch
-        run: |
-          curl -X POST \
-            -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
-            -H "Accept: application/vnd.github+json" \
-            https://api.github.com/repos/${{ github.repository }}/dispatches \
-            -d '{
-              "event_type": "sub-dispatch",
-              "client_payload": {
-                "issue_key": "${{ github.event.client_payload.issue_key }}",
-                "branch_name": "${{ github.event.client_payload.branch_name }}"
-              }
-            }'
+          echo "🔑 Issue Key: ${{ steps.vars.outputs.issue }}"
+          echo "🌿 Branch:   ${{ steps.vars.outputs.branch }}"
