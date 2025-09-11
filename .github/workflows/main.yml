@@ -1,17 +1,25 @@
-name: Run from Jira
+name: Jira Transition Workflow
 
 on:
   repository_dispatch:
-    types: [jira-webhook]
+    types: [jira-transition]
 
 jobs:
-  build:
+  build-from-jira:
     runs-on: ubuntu-latest
+
     steps:
-      - name: Checkout
+      - name: Checkout branch from Jira
         uses: actions/checkout@v4
         with:
-          ref: ${{ github.event.client_payload.branch }}
+          ref: ${{ github.event.client_payload.branch_name }}
 
-      - name: Debug branch
-        run: echo "Ejecutando en rama ${{ github.event.client_payload.branch }}"
+      - name: Debug info
+        run: |
+          echo "Evento recibido desde Jira"
+          echo "Issue Key: ${{ github.event.client_payload.issue_key }}"
+          echo "Branch: ${{ github.event.client_payload.branch_name }}"
+
+      # Aquí pondrías los pasos reales de tu pipeline
+      - name: Run build
+        run: echo "Aquí correría el build/test/deploy en la rama ${{ github.event.client_payload.branch_name }}"
