@@ -3,30 +3,32 @@ import json
 import sys
 import os
 import requests
+from requests.auth import HTTPBasicAuth
 
-# Archivos
-input_file = sys.argv[1]  # tickets/story_001.json
-output_file = input_file.replace(".json", "_processed.json")
-
-# Variables de entorno (desde GitHub Actions)
-JIRA_URL = os.getenv("JIRA_URL")
-JIRA_AUTH = os.getenv("JIRA_AUTH")
-PROJECT_KEY = os.getenv("JIRA_PROJECT", "ONE")
-
-if not JIRA_URL or not JIRA_AUTH:
-    print("❌ Error: JIRA_URL o JIRA_AUTH no definidos")
+if len(sys.argv) < 2:
+    print("Uso: python3 scrapeo_qa.py <ticket_json_file>")
     sys.exit(1)
 
-# Leer ticket
-with open(input_file, "r", encoding="utf-8") as f:
+ticket_file = sys.argv[1]
+
+# Leer ticket original
+with open(ticket_file, "r", encoding="utf-8") as f:
     ticket = json.load(f)
 
-# Valor que queremos buscar (ej: "Cristiano Ronaldo")
-value_to_find = ticket["fields"]["customfield_10078"]
+# Config
+JIRA_URL = os.environ.get("JIRA_URL")
+JIRA_AUTH = os.environ.get("JIRA_AUTH")  # debe ser Base64 user:token
+PROJECT_KEY = ticket["fields"]["project"]["key"]
+ISSUE_TYPE = ticket["fields"]["issuetype"]["name"]
+CF_KEY = "customfield_10078"
 
 # Obtener metadata de creación de issues
-createmeta_url = f"{JIRA_URL}/rest/api/3/issue/createmeta?projectKeys={PROJECT_KEY}&issuetypeNames=Story&expand=projects.issuetypes.fields"
-headers = {"Authorization": f"Basic {JIRA_AUTH}", "Accept": "application/json"}
+createmeta_url = f"{JIRA_URL}/rest/api/3/issue/createmeta?projectKeys={PROJECT_KEY}&issuetypeNames={ISSUE_TYPE}&expand=projects.issuetypes.fields"
+
+headers = {
+    "Accept": "application/json",
+    "Authorization": f"Basic {JIRA_AUTH}"
+}
 
 r = requests.get(createmeta_url, headers=headers)
 if r.status_code != 200:
@@ -36,21 +38,25 @@ if r.status_code != 200:
 
 meta = r.json()
 
-# Extraer allowedValues del customfield_10078
-fields_meta = meta["projects"][0]["issuetypes"][0]["fields"]
-cf_meta = fields_meta.get("customfield_10078")
-if not cf_meta or "allowedValues" not in cf_meta:
-    print("❌ No se encontró metadata de customfield_10078")
+if not meta.get("projects"):
+    print(f"❌ No se encontraron proyectos en la metadata para {PROJECT_KEY}/{ISSUE_TYPE}")
     sys.exit(1)
 
-allowed_values = cf_meta["allowedValues"]
+fields_meta = meta["projects"][0]["issuetypes"][0]["fields"]
+
+if CF_KEY not in fields_meta:
+    print(f"❌ No se encontró el campo {CF_KEY} en la metadata del issue")
+    sys.exit(1)
+
+allowed_values = fields_meta[CF_KEY].get("allowedValues", [])
+value_to_find = ticket["fields"].get(CF_KEY)
 
 selected_id = None
 for opt in allowed_values:
-    # hijos (cascading select)
+    # Revisar children
     for child in opt.get("children", []):
-        if child["value"] == value_to_find:
-            selected_id = child["id"]
+        if child.get("value") == value_to_find:
+            selected_id = child.get("id")
             break
     if selected_id:
         break
@@ -59,10 +65,11 @@ if not selected_id:
     print(f"❌ No se encontró opción válida para '{value_to_find}'")
     sys.exit(1)
 
-# Reemplazar valor en ticket
-ticket["fields"]["customfield_10078"] = {"id": selected_id}
+# Reemplazar valor en el ticket
+ticket["fields"][CF_KEY] = {"id": selected_id}
 
-# Guardar ticket procesado
+# Guardar JSON procesado
+output_file = ticket_file.replace(".json", "_processed.json")
 with open(output_file, "w", encoding="utf-8") as f:
     json.dump(ticket, f, ensure_ascii=False, indent=2)
 
