@@ -96,3 +96,46 @@ jobs:
                   }
                 }"
 
+      - name: Verificar ejecución del workflow y comentar en Jira
+        shell: bash
+        env:
+          GH_TOKEN: ${{ env.GH_TOKEN }}
+          ISSUE_KEY: ${{ steps.vars.outputs.issue }}
+          BRANCH_NAME: ${{ steps.vars.outputs.branch }}
+          JIRA_AUTH: ${{ secrets.JIRA_AUTH }}
+          JIRA_URL: "https://marketingpachas.atlassian.net"
+        run: |
+          echo "🔎 Esperando que el workflow main.yml termine para la rama $BRANCH_NAME ..."
+
+          # Reintentos cada 15s hasta que termine (timeout 5min)
+          for i in {1..20}; do
+            WORKFLOW_RUN=$(curl -s -H "Authorization: Bearer $GH_TOKEN" \
+              -H "Accept: application/vnd.github+json" \
+              "https://api.github.com/repos/ricardops2211/databricks-lab/actions/workflows/main.yml/runs?branch=$BRANCH_NAME&per_page=1" \
+              | jq '.[].conclusion // empty')
+
+            if [ -n "$WORKFLOW_RUN" ]; then
+              echo "✅ Workflow finalizó con estado: $WORKFLOW_RUN"
+              break
+            fi
+
+            echo "⏳ Workflow aún no finalizó, esperando 15s..."
+            sleep 15
+          done
+
+          if [ "$WORKFLOW_RUN" == "success" ]; then
+            COMMENT="✅ El workflow main.yml terminó correctamente para la rama $BRANCH_NAME y el ticket $ISSUE_KEY."
+          else
+            COMMENT="⚠️ El workflow main.yml terminó con errores para la rama $BRANCH_NAME. Ticket $ISSUE_KEY."
+          fi
+
+          # Comentar en Jira
+          curl -s -X POST \
+            -H "Authorization: Basic $JIRA_AUTH" \
+            -H "Content-Type: application/json" \
+            --data "{
+              \"body\": \"$COMMENT\"
+            }" \
+            "$JIRA_URL/rest/api/3/issue/$ISSUE_KEY/comment" \
+            | jq .
+
