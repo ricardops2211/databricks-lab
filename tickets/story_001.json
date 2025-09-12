@@ -16,34 +16,10 @@
       ]
     },
     "customfield_10077": { "id": "10029" },
-{
-  "fields": {
-    "issuetype": { "name": "Story" },
-    "project": { "key": "ONE" },
-    "summary": "Danissa",
-    "description": {
-      "type": "doc",
-      "version": 1,
-      "content": [
-        {
-          "type": "paragraph",
-          "content": [
-            { "type": "text", "text": "Creado desde GitHub Actions." }
-          ]
-        }
-      ]
-    },
-    "customfield_10077": { "id": "10029" },
     "customfield_10078": [
       { "id": "10037"},
       { "id": "10072"}
     ],
-    "customfield_10079": { "id": "10033" },
-    "customfield_10081": { "id": "10027" },
-    "customfield_10082": { "id": "10020" }
-  }
-}
-
     "customfield_10079": { "id": "10033" },
     "customfield_10081": { "id": "10027" },
     "customfield_10082": { "id": "10020" }
