@@ -60,13 +60,14 @@ jobs:
           echo "::add-mask::$jiraAuth"
           echo "JIRA_AUTH=$jiraAuth" >> "$GITHUB_ENV"
 
-      - name: Procesar JSON de ticket con Python
+      - name: Procesar ticket QA
         shell: bash
+        env:
+          JIRA_URL: ${{ env.JIRA_URL }}
+          JIRA_AUTH: ${{ env.JIRA_AUTH }}
         run: |
           python3 scripts/scrapeo_qa.py tickets/story_001.json
-          TICKET_FILE="tickets/story_001_processed.json"
-          echo "📂 Usando archivo procesado: $TICKET_FILE"
-          echo "TICKET_FILE=$TICKET_FILE" >> "$GITHUB_ENV"
+
 
       - name: Crear historia en Jira y agregar comentario
         shell: bash
