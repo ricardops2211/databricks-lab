@@ -64,13 +64,13 @@ jobs:
         shell: bash
         env:
           JIRA_URL: ${{ env.JIRA_URL }}
-          JIRA_PROJECT: ${{ env.JIRA_PROJECT }}
           JIRA_AUTH: ${{ env.JIRA_AUTH }}
         run: |
           python3 scripts/scrapeo_qa.py tickets/story_001.json
           TICKET_FILE="tickets/story_001_processed.json"
           echo "📂 Usando archivo procesado: $TICKET_FILE"
           echo "TICKET_FILE=$TICKET_FILE" >> "$GITHUB_ENV"
+
 
 
 
