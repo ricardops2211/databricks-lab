@@ -17,8 +17,8 @@
     },
     "customfield_10077": { "id": "10029" },
     "customfield_10078": [
-      { "id": "10037"},
-      { "id": "10072"}
+      { "id": "10037", "value": "PORTUGAL" },
+      { "id": "10072", "value": "Cristiano Ronaldo" }
     ],
     "customfield_10079": { "id": "10033" },
     "customfield_10081": { "id": "10027" },
