@@ -78,27 +78,29 @@ jobs:
         env:
           JIRA_AUTH: ${{ env.JIRA_AUTH }}
           JIRA_URL: ${{ env.JIRA_URL }}
-          TARGET_ISSUE: ${{ steps.vars.outputs.issue }}  # el ticket donde comentar
+          TARGET_ISSUE: ${{ steps.vars.outputs.issue }}
         run: |
           set -Eeuo pipefail
       
           TICKET_FILE="tickets/story_001.json"
           echo "📂 Usando archivo: $TICKET_FILE"
       
-          # 🔹 Crear la historia en Jira
+          # Crear la historia
           RESPONSE=$(curl -s -X POST \
             -H "Authorization: Basic $JIRA_AUTH" \
             -H "Content-Type: application/json" \
             --data @"$TICKET_FILE" \
             "$JIRA_URL/rest/api/3/issue")
       
-          # 🔹 Extraer key y URL del ticket creado
           NEW_TICKET_KEY=$(echo "$RESPONSE" | jq -r '.key')
           NEW_TICKET_URL="$JIRA_URL/browse/$NEW_TICKET_KEY"
           echo "✅ Ticket creado: $NEW_TICKET_KEY -> $NEW_TICKET_URL"
       
-          # 🔹 Agregar comentario al ticket target
-          COMMENT="{\"body\": \"Se ha creado la historia $NEW_TICKET_KEY: $NEW_TICKET_URL\"}"
+          # Preparar comentario en formato compatible Jira Cloud
+          COMMENT=$(jq -n --arg txt "Se ha creado la historia $NEW_TICKET_KEY: $NEW_TICKET_URL" \
+            '{body: {type: "doc", version: 1, content: [{type: "paragraph", content: [{type: "text", text: $txt}]}]}}')
+      
+          # Agregar comentario al ticket target
           curl -s -X POST \
             -H "Authorization: Basic $JIRA_AUTH" \
             -H "Content-Type: application/json" \
@@ -106,4 +108,5 @@ jobs:
             "$JIRA_URL/rest/api/3/issue/$TARGET_ISSUE/comment"
       
           echo "💬 Comentario agregado en $TARGET_ISSUE"
+
 
