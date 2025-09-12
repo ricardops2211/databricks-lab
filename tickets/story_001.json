@@ -1,12 +1,8 @@
 {
   "fields": {
-    "project": {
-      "key": "KAN"
-    },
-    "summary": "Creado desde GitHub Actions",
-    "issuetype": {
-      "name": "Historia"
-    },
+    "issuetype": { "name": "Story" },
+    "project": { "key": "ONE" },
+    "summary": "Maga-NuevCar",
     "description": {
       "type": "doc",
       "version": 1,
@@ -14,13 +10,15 @@
         {
           "type": "paragraph",
           "content": [
-            {
-              "type": "text",
-              "text": "Creado desde GitHub Actions."
-            }
+            { "type": "text", "text": "Creado desde GitHub Actions." }
           ]
         }
       ]
-    }
+    },
+    "customfield_10077": { "id": "10029" },
+    "customfield_10078": { "id": "10037" },
+    "customfield_10079": { "id": "10033" },
+    "customfield_10081": { "id": "10027" },
+    "customfield_10082": { "id": "10020" }
   }
 }
