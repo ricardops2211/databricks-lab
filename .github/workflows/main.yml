@@ -25,11 +25,12 @@ jobs:
         id: vars
         run: |
           if [ -n "${{ github.event.client_payload.branch_name }}" ]; then
-            echo "branch=${{ github.event.client_payload.branch_name }}" >> $GITHUB_OUTPUT
-            echo "issue=${{ github.event.client_payload.issue_key }}" >> $GITHUB_OUTPUT
+              echo "branch=${{ github.event.client_payload.branch_name }}" >> $GITHUB_OUTPUT
+              echo "issue=${{ github.event.client_payload.issue_key }}" >> $GITHUB_OUTPUT
           else
-            echo "branch=${{ github.event.inputs.branch_name }}" >> $GITHUB_OUTPUT
-            echo "issue=${{ github.event.inputs.issue_key }}" >> $GITHUB_OUTPUT
+              echo "branch=${{ github.event.inputs.branch_name }}" >> $GITHUB_OUTPUT
+              echo "issue=${{ github.event.inputs.issue_key }}" >> $GITHUB_OUTPUT
+          fi
 
       - name: Checkout
         uses: actions/checkout@v4
