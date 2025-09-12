@@ -14,7 +14,7 @@ on:
 
 env:
   JIRA_URL: "https://marketingpachas.atlassian.net"
-  JIRA_PROJECT: "KAN"   # clave del proyecto Jira
+  JIRA_PROJECT: "KAN"
 
 jobs:
   jira-itsm-workflow:
@@ -30,9 +30,7 @@ jobs:
           else
             echo "branch=${{ github.event.inputs.branch_name }}" >> $GITHUB_OUTPUT
             echo "issue=${{ github.event.inputs.issue_key }}" >> $GITHUB_OUTPUT
-          fi
 
-      # 🔹 Paso 0: Checkout del repo en la rama del ticket
       - name: Checkout
         uses: actions/checkout@v4
         with:
@@ -47,9 +45,7 @@ jobs:
           PATH: ${{ env.PATH }}:/home/gha-runner/vault
         run: |
           set -Eeuo pipefail
-          vault --version
           vault login "$VAULT_TOKEN" >/dev/null
-          vault token lookup
 
       - name: Obtener credenciales Jira
         id: get-jira
@@ -63,15 +59,13 @@ jobs:
           echo "::add-mask::$jiraAuth"
           echo "JIRA_AUTH=$jiraAuth" >> "$GITHUB_ENV"
 
-      - name: Validar conexión a Jira ITSM
+      - name: Procesar JSON de ticket con Python
         shell: bash
         run: |
-          echo "🔎 Probando conexión a Jira Cloud en $JIRA_URL ..."
-          curl -s -X GET \
-            -H "Authorization: Basic $JIRA_AUTH" \
-            -H "Accept: application/json" \
-            "$JIRA_URL/rest/api/3/project" \
-            | jq '.[] | {key, name, id}' || true
+          python3 scripts/scrapeo_qa.py tickets/story_001.json
+          TICKET_FILE="tickets/story_001_processed.json"
+          echo "📂 Usando archivo procesado: $TICKET_FILE"
+          echo "TICKET_FILE=$TICKET_FILE" >> "$GITHUB_ENV"
 
       - name: Crear historia en Jira y agregar comentario
         shell: bash
@@ -79,42 +73,36 @@ jobs:
           JIRA_AUTH: ${{ env.JIRA_AUTH }}
           JIRA_URL: ${{ env.JIRA_URL }}
           TARGET_ISSUE: ${{ steps.vars.outputs.issue }}
+          TICKET_FILE: ${{ env.TICKET_FILE }}
         run: |
           set -Eeuo pipefail
-      
-          TICKET_FILE="tickets/story_001.json"
-          echo "📂 Usando archivo: $TICKET_FILE"
-      
+
           # Crear la historia
           RESPONSE=$(curl -s -X POST \
             -H "Authorization: Basic $JIRA_AUTH" \
             -H "Content-Type: application/json" \
             --data @"$TICKET_FILE" \
             "$JIRA_URL/rest/api/3/issue")
-      
-          # Extraer key y validar
+
           NEW_TICKET_KEY=$(echo "$RESPONSE" | jq -r '.key // empty')
           if [ -z "$NEW_TICKET_KEY" ] || [ "$NEW_TICKET_KEY" = "null" ]; then
             echo "❌ Error: no se pudo crear la historia en Jira"
             echo "Respuesta de Jira: $RESPONSE"
             exit 1
           fi
-      
+
           NEW_TICKET_URL="$JIRA_URL/browse/$NEW_TICKET_KEY"
           echo "✅ Ticket creado: $NEW_TICKET_KEY -> $NEW_TICKET_URL"
-      
-          # Preparar comentario en formato compatible Jira Cloud
+
+          # Preparar comentario
           COMMENT=$(jq -n --arg txt "Se ha creado la historia $NEW_TICKET_KEY: $NEW_TICKET_URL" \
             '{body: {type: "doc", version: 1, content: [{type: "paragraph", content: [{type: "text", text: $txt}]}]}}')
-      
+
           # Agregar comentario al ticket target
-          COMMENT_RESPONSE=$(curl -s -X POST \
+          curl -s -X POST \
             -H "Authorization: Basic $JIRA_AUTH" \
             -H "Content-Type: application/json" \
             --data "$COMMENT" \
-            "$JIRA_URL/rest/api/3/issue/$TARGET_ISSUE/comment")
-      
+            "$JIRA_URL/rest/api/3/issue/$TARGET_ISSUE/comment"
+
           echo "💬 Comentario agregado en $TARGET_ISSUE"
-
-
-
