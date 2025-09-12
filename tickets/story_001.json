@@ -2,7 +2,7 @@
   "fields": {
     "issuetype": { "name": "Story" },
     "project": { "key": "ONE" },
-    "summary": "Maga-NuevCar",
+    "summary": "USOPEN",
     "description": {
       "type": "doc",
       "version": 1,
